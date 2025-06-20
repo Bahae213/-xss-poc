@@ -28,7 +28,7 @@
 <script>
 function sendXSS() {
   const payload = {
-    html: "<script>alert('🔥 XSS')</script>"
+    html: "<img src=x onerror=alert('🔥 XSS')>"
   };
   document.getElementById("target").contentWindow.postMessage(payload, "*");
 }
