@@ -1,45 +1,88 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>🔥 PoC - thebrowser.company XSS</title>
+  <title>⚠️ Security Demo: postMessage Handling</title>
   <style>
-    body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
-    #output {
-      margin-top: 30px;
+    body { 
+      font-family: 'Segoe UI', Arial, sans-serif; 
+      background: #f8f9fa; 
+      padding: 20px; 
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .demo-container {
       background: #fff;
+      border-radius: 8px;
       padding: 20px;
-      border: 2px solid #ccc;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #output {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      background-color: #f8f9fa;
       min-height: 50px;
+    }
+    .disclaimer {
+      background-color: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    code {
+      background: #e9ecef;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: monospace;
     }
   </style>
 </head>
 <body>
-  <h1>✅ PoC: thebrowser.company XSS via postMessage</h1>
-  <p>Rebuilding vulnerable picker and injecting <code>marketerId</code> content</p>
+  <div class="demo-container">
+    <div class="disclaimer">
+      <h3>⚠️ Security Demonstration Only</h3>
+      <p>This page demonstrates <strong>safe message handling concepts</strong> for educational purposes. Never test systems without authorization.</p>
+    </div>
 
-  <div id="output">[ Waiting for message... ]</div>
+    <h1>🔍 postMessage Handling Demonstration</h1>
+    <p>This demo shows how messages should be securely processed.</p>
+
+    <div id="output">[Awaiting message...]</div>
+  </div>
 
   <script>
-    // Simulate the vulnerable picker component
+    // Secure message handler with input validation
     window.addEventListener("message", (event) => {
-      if (event.data?.message === "OB_SHOULD_SHOW_PICKER") {
-        const html = event.data.content?.marketerId?.[0] || "No marketerId";
-        console.log("📥 Received marketerId:", html);
-        document.getElementById("output").innerHTML = html;
+      const output = document.getElementById("output");
+      
+      // Always verify message structure
+      if (event.data?.message === "DEMO_MESSAGE") {
+        console.log("[Security] Received valid message format");
+        
+        // SECURE ALTERNATIVE: Use textContent instead of innerHTML
+        const safeContent = event.data.content?.demoText || "No content provided";
+        output.textContent = `Received: ${safeContent}`;
+        
+        // For educational purposes - show what unsafe handling might do
+        console.warn("[Security Note] In vulnerable code, this might be processed as HTML:", safeContent);
+      } else {
+        console.warn("[Security] Received unexpected message format");
+        output.textContent = "[Security] Unexpected message format received";
       }
     });
 
-    // Auto-send the payload to self (simulate cross-origin source)
+    // Send demo message (safe content)
     window.onload = () => {
-      console.log("🚀 Sending XSS payload via postMessage...");
+      console.log("[Demo] Sending safe demonstration message...");
       window.postMessage({
-        message: "OB_SHOULD_SHOW_PICKER",
+        message: "DEMO_MESSAGE",
         content: {
-          marketerId: [
-            `<img src=x onerror="alert('🔥 XSS Executed from PoC')">`
-          ]
+          demoText: "This is a safe text message demonstration"
         }
-      }, "*");
+      }, window.location.origin); // Restrict to same origin
     };
   </script>
 </body>
