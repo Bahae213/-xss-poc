@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>XSS PoC</title>
+  <title>XSS Demonstration</title>
 </head>
 <body>
 
@@ -16,7 +16,7 @@
     <div id="out">[في انتظار الرسالة]</div>
     <script>
       window.addEventListener("message", function(e) {
-        if (e.data && e.data.html) {
+        if (e.data &amp;&amp; e.data.html) {
           document.getElementById("out").innerHTML = e.data.html;
         }
       });
@@ -28,7 +28,7 @@
 <script>
 function sendXSS() {
   const payload = {
-    html: "<img src=x onerror=alert('🔥 XSS')>"
+    html: "<div style='color:red;padding:10px;border:1px solid red'>🔥 XSS Simulation Triggered</div>"
   };
   document.getElementById("target").contentWindow.postMessage(payload, "*");
 }
