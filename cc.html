@@ -2,105 +2,86 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>⚠️ Security Research: XSS Vectors Demo</title>
+  <title>⚠️ Security Research: XSS Demonstration</title>
   <style>
-    body { background: #111; color: #0f0; font-family: monospace; padding: 1rem; max-width: 900px; margin: 0 auto; }
-    .warning { color: #ff0; border-left: 3px solid #ff0; padding-left: 1rem; }
+    body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .disclaimer { 
+      background-color: #fff3cd; 
+      border-left: 5px solid #ffeeba;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    iframe { border: 2px solid #ddd; }
   </style>
 </head>
 <body>
 
-<div class="warning">
-  <h3>⚠️ Important Notice:</h3>
-  <p>This is for educational purposes only. Unauthorized testing on live systems is illegal.</p>
+<div class="disclaimer">
+  <h3>⚠️ Disclaimer:</h3>
+  <p>This demonstration is for <strong>educational purposes only</strong>. Testing XSS vulnerabilities without explicit permission is illegal and unethical.</p>
 </div>
 
-<h2>🔍 Multi-Vector DOM XSS Demonstration</h2>
-<p>This demo illustrates various XSS vectors for security research purposes.</p>
+<h2>🔍 DOM XSS Research Demo</h2>
+<p>This page demonstrates potential XSS vectors for security research.</p>
 
-<iframe id="target" src="about:blank" width="100%" height="600" style="border: 2px solid lime;"></iframe>
+<iframe id="target" src="about:blank" width="100%" height="600"></iframe>
 
 <script>
-const iframe = document.getElementById("target");
-iframe.src = "https://thebrowser.company/"; // Load after DOM ready
+// Wait for DOM to be fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+  const iframe = document.getElementById("target");
+  iframe.src = "https://thebrowser.company/";
 
-// Safe demonstration payloads (non-malicious)
-const payloads = [
-  // Example 1: Basic injection test
-  {
-    message: "SECURITY_DEMO",
-    content: {
-      test: "This would be a potential XSS vector in vulnerable systems"
-    }
-  },
-
-  // Example 2: React props simulation
-  {
-    props: {
-      __html: "<!-- Simulated unsafe content -->"
-    }
-  },
-
-  // Example 3: SVG context
-  {
-    type: "security_demo",
-    html: "<!-- Simulated SVG payload -->"
-  }
-];
-
-// Mock encoder for demonstration
-function mockEncode(str) {
-  return "ENCODED_" + btoa(encodeURIComponent(str)).substring(0, 32);
-}
-
-// Safe demonstration function
-function demonstrateVectors() {
-  console.log("🔧 Starting security demonstration");
-
-  // 1. Safe window.name example
-  try {
-    iframe.contentWindow.name = JSON.stringify({ 
-      demo: "This demonstrates how window.name could be used" 
-    });
-    console.log("ℹ️ window.name demonstration set");
-  } catch (e) {
-    console.warn("⚠️ Security restriction encountered:", e);
+  // Mock encoder function (non-functional example)
+  function mockEncoder(str) {
+    return "MOCK_ENCODED_" + str.length;
   }
 
-  // 2. Simulated encoded message
-  setTimeout(() => {
-    const demoMessage = mockEncode("Security demonstration");
-    try {
-      iframe.contentWindow.postMessage(demoMessage, "https://thebrowser.company");
-      console.log("ℹ️ Simulated encoded message sent");
-    } catch (e) {
-      console.warn("⚠️ PostMessage restriction:", e);
-    }
-  }, 1000);
-
-  // 3. Structured payload examples
-  payloads.forEach((p, i) => {
-    setTimeout(() => {
-      try {
-        iframe.contentWindow.postMessage(p, "https://thebrowser.company");
-        console.log(`ℹ️ Demo vector ${i + 1} sent`);
-      } catch (e) {
-        console.warn(`⚠️ Vector ${i + 1} blocked:`, e);
+  // Demonstration payloads (non-malicious)
+  const demoPayloads = [
+    {
+      message: "SECURITY_DEMO",
+      content: {
+        test: "Example payload structure (safe)"
       }
-    }, 1500 + i * 1000);
-  });
-}
+    },
+    {
+      demo: {
+        html: "<!-- Example HTML injection point -->"
+      }
+    }
+  ];
 
-// Start demonstration when iframe loads
-iframe.onload = () => {
-  console.log("✅ iframe loaded");
-  demonstrateVectors();
-};
+  iframe.onload = () => {
+    console.log("ℹ️ iframe loaded - running demonstration");
 
-// Error handling
-iframe.onerror = () => {
-  console.error("❌ Failed to load iframe");
-};
+    // Safe window.name example
+    try {
+      iframe.contentWindow.name = JSON.stringify({
+        demo: "Example window.name payload (safe)"
+      });
+      console.log("ℹ️ Set window.name demonstration");
+    } catch (e) {
+      console.warn("⚠️ Security restriction:", e);
+    }
+
+    // Send demonstration messages
+    demoPayloads.forEach((payload, index) => {
+      setTimeout(() => {
+        try {
+          iframe.contentWindow.postMessage(payload, "https://thebrowser.company");
+          console.log(`ℹ️ Sent demo payload ${index + 1}`);
+        } catch (e) {
+          console.warn(`⚠️ Failed to send payload ${index + 1}:`, e);
+        }
+      }, 1000 * (index + 1));
+    });
+  };
+
+  iframe.onerror = () => {
+    console.error("❌ Failed to load iframe");
+  };
+});
 </script>
 
 </body>
