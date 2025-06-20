@@ -36,7 +36,7 @@
         }
       ];
 
-      console.log("🚀 Sending fuzzed potMessage payloads...");
+      console.log("🚀 Sending fuzzed postMessage payloads...");
       payloads.forEach((p, i) => {
         console.log(`🔁 Sending payload #${i + 1}:`, p);
         iframe.contentWindow.postMessage(p, "*");
