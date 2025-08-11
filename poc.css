@@ -1,14 +1,13 @@
-body::before {
-    content: "⚠ External CSS Injection Successful";
-    background: red;
-    color: white;
-    font-size: 20px;
-    display: block;
-    padding: 10px;
-    z-index: 999999;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
+/* إخفاء زر التقديم */
+button, a[href*="apply"], [data-testid="apply-button"] {
+    display: none !important;
 }
+
+/* أو تغيير النصوص */
+h1, h2, p {
+    color: red !important;
+    font-size: 30px !important;
+}
+
 
 
